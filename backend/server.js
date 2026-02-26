@@ -40,6 +40,10 @@ app.use("/api", limiter);
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Debug logging
+      console.log('CORS Debug - Request origin:', origin);
+      console.log('CORS Debug - CLIENT_URL env var:', process.env.CLIENT_URL);
+      
       // Allow requests with no origin (mobile apps, curl, etc)
       if (!origin) return callback(null, true);
       
@@ -52,9 +56,13 @@ app.use(
         'http://localhost:5173/' // development with slash
       ].filter(Boolean);
       
+      console.log('CORS Debug - Allowed origins:', allowedOrigins);
+      
       if (allowedOrigins.includes(origin)) {
+        console.log('CORS Debug - Origin allowed:', origin);
         callback(null, true);
       } else {
+        console.log('CORS Debug - Origin blocked:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
