@@ -5,6 +5,7 @@ const { isAuthenticated } = require("../middleware/auth");
 const User = require("../models/User");
 const { generatePID } = require("../config/passport");
 const { sendMail } = require("../utils/mailer");
+const { generateToken } = require("../utils/jwt");
 
 // ── LOCAL SIGNUP ───────────────────────────────────────────
 router.post("/signup", async (req, res) => {
@@ -49,12 +50,10 @@ router.post("/signup", async (req, res) => {
       text: `Hi ${user.name},\n\nYour account has been created successfully.\nPID: ${user.pid}\n\nYou can now register for events.\n\nwith Regards\nPrakhar Gupta \nVice-President`,
     }).catch(() => {});
 
-    // Auto-login after signup
-    req.login(user, (err) => {
-      if (err) return res.status(500).json({ error: "Signup succeeded but login failed" });
-      const { _id, name, email, avatar, pid, role, phone, college, department, year } = user;
-      return res.status(201).json({ _id, name, email, avatar, pid, role, phone, college, department, year });
-    });
+    // Generate JWT token and return user data
+    const { _id, name, email, avatar, pid, role, phone, college, department, year } = user;
+    const token = generateToken({ _id, name, email, avatar, pid, role, phone, college, department, year });
+    return res.status(201).json({ _id, name, email, avatar, pid, role, phone, college, department, year, token });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -87,11 +86,10 @@ router.post("/login", async (req, res) => {
       return res.status(403).json({ error: "Account has been deactivated" });
     }
 
-    req.login(user, (err) => {
-      if (err) return res.status(500).json({ error: "Login failed" });
-      const { _id, name, email, avatar, pid, role, phone, college, department, year } = user;
-      return res.json({ _id, name, email, avatar, pid, role, phone, college, department, year });
-    });
+    // Generate JWT token and return user data
+    const { _id, name, email, avatar, pid, role, phone, college, department, year } = user;
+    const token = generateToken({ _id, name, email, avatar, pid, role, phone, college, department, year });
+    return res.json({ _id, name, email, avatar, pid, role, phone, college, department, year, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -144,14 +142,9 @@ router.put("/profile", isAuthenticated, async (req, res) => {
 });
 
 // ── LOGOUT ────────────────────────────────────────────────
-router.post("/logout", (req, res, next) => {
-  req.logout((err) => {
-    if (err) return next(err);
-    req.session.destroy(() => {
-      res.clearCookie("connect.sid");
-      res.json({ message: "Logged out successfully" });
-    });
-  });
+router.post("/logout", (req, res) => {
+  // JWT is stateless, client handles token removal
+  res.json({ message: "Logged out successfully" });
 });
 
 module.exports = router;

@@ -1,14 +1,10 @@
 require("dotenv").config();
 const express = require("express");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-const passport = require("passport");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
-require("./config/passport");
 
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection", err?.message || err);
@@ -36,37 +32,11 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-// CORS
+// CORS - Simplified for JWT
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Debug logging
-      console.log('CORS Debug - Request origin:', origin);
-      console.log('CORS Debug - CLIENT_URL env var:', process.env.CLIENT_URL);
-      
-      // Allow requests with no origin (mobile apps, curl, etc)
-      if (!origin) return callback(null, true);
-      
-      // Allowed origins - both with and without trailing slash
-      const allowedOrigins = [
-        process.env.CLIENT_URL,
-        process.env.CLIENT_URL?.replace(/\/$/, ''), // without trailing slash
-        process.env.CLIENT_URL?.endsWith('/') ? process.env.CLIENT_URL : process.env.CLIENT_URL + '/', // with trailing slash
-        'http://localhost:5173', // development
-        'http://localhost:5173/' // development with slash
-      ].filter(Boolean);
-      
-      console.log('CORS Debug - Allowed origins:', allowedOrigins);
-      
-      if (allowedOrigins.includes(origin)) {
-        console.log('CORS Debug - Origin allowed:', origin);
-        callback(null, true);
-      } else {
-        console.log('CORS Debug - Origin blocked:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
+    origin: ["https://srmscetrevents.in", "https://srmscetrevents.in/", "http://localhost:5173", "http://localhost:5173/"],
+    credentials: false, // JWT doesn't need credentials
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
@@ -75,28 +45,12 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Session
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      ttl: 2 * 60 * 60, // 2 hours
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 2 * 60 * 60 * 1000, // 2 hours
-    },
-  })
-);
-
-// Passport
-app.use(passport.initialize());
-app.use(passport.session());
+// JWT Debug Middleware (optional)
+app.use((req, res, next) => {
+  console.log('JWT Debug - Path:', req.path);
+  console.log('JWT Debug - Auth Header:', req.headers.authorization);
+  next();
+});
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));

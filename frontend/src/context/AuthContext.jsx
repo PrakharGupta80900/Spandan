@@ -9,10 +9,18 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = useCallback(async () => {
     try {
-      const { data } = await API.get("/auth/me");
-      setUser(data);
+      const token = localStorage.getItem('token');
+      if (token) {
+        API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const { data } = await API.get("/auth/me");
+        setUser(data);
+      } else {
+        setUser(null);
+      }
     } catch {
       setUser(null);
+      localStorage.removeItem('token');
+      delete API.defaults.headers.common['Authorization'];
     } finally {
       setLoading(false);
     }
@@ -21,19 +29,27 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     fetchUser();
 
-    const handleUnauthorized = () => setUser(null);
+    const handleUnauthorized = () => {
+      setUser(null);
+      localStorage.removeItem('token');
+      delete API.defaults.headers.common['Authorization'];
+    };
     window.addEventListener("auth:unauthorized", handleUnauthorized);
     return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, [fetchUser]);
 
   const login = async (email, password) => {
     const { data } = await API.post("/auth/login", { email, password });
+    localStorage.setItem('token', data.token);
+    API.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setUser(data);
     return data;
   };
 
   const signup = async (formData) => {
     const { data } = await API.post("/auth/signup", formData);
+    localStorage.setItem('token', data.token);
+    API.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setUser(data);
     return data;
   };
@@ -41,9 +57,12 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await API.post("/auth/logout");
-      setUser(null);
     } catch {
-      // swallow logout errors to avoid noisy logs
+      // JWT is stateless, so server logout is optional
+    } finally {
+      setUser(null);
+      localStorage.removeItem('token');
+      delete API.defaults.headers.common['Authorization'];
     }
   };
 
