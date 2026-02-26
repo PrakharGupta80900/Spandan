@@ -1,7 +1,17 @@
 import axios from "axios";
 
+// Determine API base URL based on environment
+const getBaseURL = () => {
+  // In development, use the Vite proxy
+  if (import.meta.env.DEV) {
+    return "/api";
+  }
+  // In production, use the Render backend URL
+  return import.meta.env.VITE_API_URL || "https://your-backend.onrender.com/api";
+};
+
 const API = axios.create({
-  baseURL: "/api",
+  baseURL: getBaseURL(),
   withCredentials: true,
 });
 
