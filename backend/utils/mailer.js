@@ -1,30 +1,36 @@
-const nodemailer = require("nodemailer");
+const SibApiV3Sdk = require("@getbrevo/brevo");
 
-const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM } = process.env;
+const { BREVO_API_KEY, MAIL_FROM, MAIL_FROM_NAME } = process.env;
 
-let transporter = null;
+let apiInstance = null;
 
-if (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: Number(SMTP_PORT) === 465,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
+if (BREVO_API_KEY) {
+  apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+  apiInstance.setApiKey(
+    SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+    BREVO_API_KEY
+  );
 } else {
-  console.warn("Mail not configured: missing SMTP env vars");
+  console.warn("Mail not configured: missing BREVO_API_KEY env var");
 }
 
 async function sendMail({ to, subject, text, html }) {
-  if (!transporter) return; // no-op if mail not configured
-  const from = MAIL_FROM || SMTP_USER;
+  if (!apiInstance) return; // no-op if mail not configured
+
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  sendSmtpEmail.sender = {
+    email: MAIL_FROM || "noreply@spandan2026.com",
+    name: MAIL_FROM_NAME || "Prakhar Gupta",
+  };
+  sendSmtpEmail.to = [{ email: to }];
+  sendSmtpEmail.subject = subject;
+  if (html) sendSmtpEmail.htmlContent = html;
+  if (text) sendSmtpEmail.textContent = text;
+
   try {
-    await transporter.sendMail({ from, to, subject, text, html });
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
   } catch (err) {
-    console.error("Mail send failed", err.message);
+    console.error("Mail send failed", err.message || err);
   }
 }
 
