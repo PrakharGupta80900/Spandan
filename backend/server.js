@@ -39,7 +39,25 @@ app.use("/api", limiter);
 // CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, etc)
+      if (!origin) return callback(null, true);
+      
+      // Allowed origins - both with and without trailing slash
+      const allowedOrigins = [
+        process.env.CLIENT_URL,
+        process.env.CLIENT_URL?.replace(/\/$/, ''), // without trailing slash
+        process.env.CLIENT_URL?.endsWith('/') ? process.env.CLIENT_URL : process.env.CLIENT_URL + '/', // with trailing slash
+        'http://localhost:5173', // development
+        'http://localhost:5173/' // development with slash
+      ].filter(Boolean);
+      
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
