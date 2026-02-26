@@ -2,17 +2,15 @@ import axios from "axios";
 
 // Determine API base URL based on environment
 const getBaseURL = () => {
-  // In development, use the Vite proxy
-  if (import.meta.env.DEV) {
-    return "/api";
-  }
-  // In production, use the Render backend URL
-  return import.meta.env.VITE_API_URL || "https://your-backend.onrender.com/api";
+  // Dev: use Vite proxy
+  if (import.meta.env.DEV) return "/api";
+  // Prod: prefer explicit env, otherwise rely on same-origin rewrites (Vercel)
+  return import.meta.env.VITE_API_URL || "/api";
 };
 
 const API = axios.create({
   baseURL: getBaseURL(),
-  withCredentials: true,
+  withCredentials: false, // JWT is in Authorization header
 });
 
 // Response interceptor for global error handling

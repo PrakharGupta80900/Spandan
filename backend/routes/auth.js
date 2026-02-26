@@ -1,5 +1,4 @@
 const express = require("express");
-const passport = require("passport");
 const router = express.Router();
 const { isAuthenticated } = require("../middleware/auth");
 const User = require("../models/User");
@@ -51,9 +50,20 @@ router.post("/signup", async (req, res) => {
     }).catch(() => {});
 
     // Generate JWT token and return user data
-    const { _id, name, email, avatar, pid, role, phone, college, department, year } = user;
-    const token = generateToken({ _id, name, email, avatar, pid, role, phone, college, department, year });
-    return res.status(201).json({ _id, name, email, avatar, pid, role, phone, college, department, year, token });
+    const payload = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      pid: user.pid,
+      role: user.role,
+      phone: user.phone,
+      college: user.college,
+      department: user.department,
+      year: user.year,
+    };
+    const token = generateToken(payload);
+    return res.status(201).json({ ...payload, token });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -87,34 +97,24 @@ router.post("/login", async (req, res) => {
     }
 
     // Generate JWT token and return user data
-    const { _id, name, email, avatar, pid, role, phone, college, department, year } = user;
-    const token = generateToken({ _id, name, email, avatar, pid, role, phone, college, department, year });
-    return res.json({ _id, name, email, avatar, pid, role, phone, college, department, year, token });
+    const payload = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      pid: user.pid,
+      role: user.role,
+      phone: user.phone,
+      college: user.college,
+      department: user.department,
+      year: user.year,
+    };
+    const token = generateToken(payload);
+    return res.json({ ...payload, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
-// ── GOOGLE OAUTH (optional) ───────────────────────────────
-router.get(
-  "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    prompt: "select_account",
-  })
-);
-
-router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth_failed`,
-  }),
-  (req, res) => {
-    res.redirect(
-      `${process.env.CLIENT_URL}/auth/callback?status=success`
-    );
-  }
-);
 
 // ── GET CURRENT USER ──────────────────────────────────────
 router.get("/me", isAuthenticated, (req, res) => {

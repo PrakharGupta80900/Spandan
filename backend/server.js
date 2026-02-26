@@ -16,6 +16,9 @@ const app = express();
 // Connect Database
 connectDB();
 
+// Behind proxy (Render/Vercel)
+app.set("trust proxy", 1);
+
 // Security Headers
 app.use(helmet());
 
@@ -32,11 +35,21 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-// CORS - Simplified for JWT
+// CORS - allow configured origins for SPA + Render/Vercel preview
+const defaultOrigins = [
+  "https://srmscetrevents.in",
+  "http://localhost:5173",
+];
+const envOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+
 app.use(
   cors({
-    origin: ["https://srmscetrevents.in", "https://srmscetrevents.in/", "http://localhost:5173", "http://localhost:5173/"],
-    credentials: false, // JWT doesn't need credentials
+    origin: allowedOrigins,
+    credentials: false, // JWT sent via Authorization header
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
@@ -45,12 +58,14 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// JWT Debug Middleware (optional)
-app.use((req, res, next) => {
-  console.log('JWT Debug - Path:', req.path);
-  console.log('JWT Debug - Auth Header:', req.headers.authorization);
-  next();
-});
+// JWT Debug Middleware (dev only)
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log("JWT Debug - Path:", req.path);
+    console.log("JWT Debug - Auth Header:", req.headers.authorization);
+    next();
+  });
+}
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
@@ -76,4 +91,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`API listening on port ${PORT}`);
+});
