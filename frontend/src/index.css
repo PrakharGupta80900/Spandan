@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-950 text-gray-100 font-sans antialiased;
+  }
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-600 rounded-full;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500/10 font-semibold px-5 py-2.5 rounded-lg transition-all duration-200;
+  }
+  .card {
+    @apply bg-gray-900 border border-gray-800 rounded-2xl;
+  }
+  .input {
+    @apply w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-500 transition;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 12px rgba(167, 139, 250, 0.35), 0 0 36px rgba(236, 72, 153, 0.25); opacity: 0.96; }
+  50% { text-shadow: 0 0 20px rgba(236, 72, 153, 0.55), 0 0 48px rgba(59, 130, 246, 0.35); opacity: 1; }
+}
+.hero-glow {
+  animation: pulse-glow 3.6s ease-in-out infinite;
+}
+
+.hero-calligraphy {
+  font-family: "Brush Script MT", "Lucida Handwriting", "Segoe Script", "Palatino Linotype", "Book Antiqua", "Palatino", cursive;
+  letter-spacing: 0.015em;
+}
+
+@keyframes bgFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
