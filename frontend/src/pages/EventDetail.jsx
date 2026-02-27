@@ -42,8 +42,8 @@ export default function EventDetail() {
           setRegistered(regs.data.some((r) => r.event._id === id));
         }
       } catch (err) {
-        toast.error("Event not found");
-        navigate("/");
+        toast.error(err.response?.data?.error || "Event not found");
+        navigate("/events");
       } finally {
         setLoading(false);
       }
