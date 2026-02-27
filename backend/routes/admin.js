@@ -166,7 +166,18 @@ router.post("/events", isAdmin, upload.single("image"), async (req, res) => {
 
     if (participationType === "group" && teamSize) {
       const ts = typeof teamSize === "string" ? JSON.parse(teamSize) : teamSize;
-      eventData.teamSize = { min: parseInt(ts.min) || 2, max: parseInt(ts.max) || 4 };
+      const min = parseInt(ts.min, 10);
+      const max = parseInt(ts.max, 10);
+      if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        return res.status(400).json({ error: "Invalid team size values" });
+      }
+      if (min < 2 || max < 2) {
+        return res.status(400).json({ error: "Team size must be at least 2" });
+      }
+      if (min > max) {
+        return res.status(400).json({ error: "Min team size cannot be greater than max team size" });
+      }
+      eventData.teamSize = { min, max };
     }
 
     if (req.file) {
@@ -202,7 +213,18 @@ router.put("/events/:id", isAdmin, upload.single("image"), async (req, res) => {
 
     if ((participationType || event.participationType) === "group" && teamSize) {
       const ts = typeof teamSize === "string" ? JSON.parse(teamSize) : teamSize;
-      updateData.teamSize = { min: parseInt(ts.min) || 2, max: parseInt(ts.max) || 4 };
+      const min = parseInt(ts.min, 10);
+      const max = parseInt(ts.max, 10);
+      if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        return res.status(400).json({ error: "Invalid team size values" });
+      }
+      if (min < 2 || max < 2) {
+        return res.status(400).json({ error: "Team size must be at least 2" });
+      }
+      if (min > max) {
+        return res.status(400).json({ error: "Min team size cannot be greater than max team size" });
+      }
+      updateData.teamSize = { min, max };
     }
 
     if (req.file) {

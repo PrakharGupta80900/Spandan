@@ -57,6 +57,10 @@ export default function EventDetail() {
     if (checkingPid) return;
     if (pid === user?.pid) return toast.error("You're already the team leader");
     if (teamMembers.some((m) => m.pid === pid)) return toast.error("PID already added");
+    const maxTeamSize = event?.teamSize?.max || 4;
+    if (teamMembers.length + 1 >= maxTeamSize) {
+      return toast.error(`Team cannot exceed ${maxTeamSize} members`);
+    }
 
     setCheckingPid(true);
     try {

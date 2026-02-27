@@ -58,6 +58,21 @@ export default function EventForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (form.participationType === "group") {
+      const min = parseInt(form.teamSizeMin, 10);
+      const max = parseInt(form.teamSizeMax, 10);
+      if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        return toast.error("Enter valid team size values");
+      }
+      if (min < 2 || max < 2) {
+        return toast.error("Team size must be at least 2");
+      }
+      if (min > max) {
+        return toast.error("Min team size cannot be greater than max team size");
+      }
+    }
+
     setLoading(true);
 
     const fd = new FormData();
