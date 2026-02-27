@@ -5,6 +5,32 @@ const Event = require("../models/Event");
 const User = require("../models/User");
 const { isAuthenticated } = require("../middleware/auth");
 
+// Validate if a PID can be added to a group before submission
+router.get("/pid/:pid/exists", isAuthenticated, async (req, res) => {
+  try {
+    const pid = String(req.params.pid || "").trim().toUpperCase();
+    if (!pid) return res.status(400).json({ error: "PID is required" });
+    if (pid === req.user.pid) {
+      return res.status(400).json({ error: "You cannot add yourself as a team member" });
+    }
+
+    const found = await User.findOne({ pid, role: "user" }).select("pid name college");
+    if (!found) return res.status(404).json({ error: "PID not found" });
+
+    // Keep behavior consistent with registration-time constraints
+    const leaderCollege = req.user.college || "";
+    if ((found.college || "") !== leaderCollege) {
+      return res.status(400).json({
+        error: `Team member must be from the same college as the leader (${leaderCollege || "unspecified"})`,
+      });
+    }
+
+    return res.json({ exists: true, user: { pid: found.pid, name: found.name, college: found.college || "" } });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // Register for an event
 router.post("/:eventId", isAuthenticated, async (req, res) => {
   try {

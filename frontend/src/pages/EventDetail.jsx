@@ -29,6 +29,7 @@ export default function EventDetail() {
   const [teamName, setTeamName] = useState("");
   const [pidInput, setPidInput] = useState("");
   const [teamMembers, setTeamMembers] = useState([]);
+  const [checkingPid, setCheckingPid] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -50,13 +51,23 @@ export default function EventDetail() {
     fetchEvent();
   }, [id, user]);
 
-  const addTeamMember = () => {
+  const addTeamMember = async () => {
     const pid = pidInput.trim().toUpperCase();
     if (!pid) return;
+    if (checkingPid) return;
     if (pid === user?.pid) return toast.error("You're already the team leader");
     if (teamMembers.some((m) => m.pid === pid)) return toast.error("PID already added");
-    setTeamMembers([...teamMembers, { pid }]);
-    setPidInput("");
+
+    setCheckingPid(true);
+    try {
+      await API.get(`/registrations/pid/${encodeURIComponent(pid)}/exists`);
+      setTeamMembers((prev) => [...prev, { pid }]);
+      setPidInput("");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Invalid PID");
+    } finally {
+      setCheckingPid(false);
+    }
   };
 
   const removeTeamMember = (pid) => {
@@ -232,7 +243,9 @@ export default function EventDetail() {
                           placeholder="e.g. PID260002"
                           className="input flex-1 font-mono text-sm"
                         />
-                        <button type="button" onClick={addTeamMember} className="btn-secondary px-3"><FiPlus /></button>
+                        <button type="button" onClick={addTeamMember} disabled={checkingPid} className="btn-secondary px-3 disabled:opacity-60">
+                          <FiPlus />
+                        </button>
                       </div>
                     </div>
 
