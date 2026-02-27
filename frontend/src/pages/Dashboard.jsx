@@ -9,6 +9,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const visibleRegistrations = registrations.filter((r) => r?.event);
 
   useEffect(() => {
     API.get("/registrations/my/all")
@@ -22,7 +23,7 @@ export default function Dashboard() {
     try {
       await API.delete(`/registrations/${eventId}`);
       setRegistrations((prev) =>
-        prev.filter((r) => r.event._id !== eventId)
+        prev.filter((r) => r?.event?._id !== eventId)
       );
       toast.success("Registration cancelled");
     } catch (err) {
@@ -68,7 +69,7 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">My Registrations</h2>
-          <span className="badge bg-[#E3DBBB]">{registrations.length} events</span>
+          <span className="badge bg-[#E3DBBB]">{visibleRegistrations.length} events</span>
         </div>
 
         {loading ? (
@@ -77,7 +78,7 @@ export default function Dashboard() {
               <div key={i} className="card h-24 animate-pulse" />
             ))}
           </div>
-        ) : registrations.length === 0 ? (
+        ) : visibleRegistrations.length === 0 ? (
           <div className="card p-12 text-center">
             <FiCalendar size={40} className="mx-auto text-gray-600 mb-3" />
             <p className="text-gray-400 mb-4">You haven't registered for any events yet.</p>
@@ -85,7 +86,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="space-y-4">
-            {registrations.map((reg) => (
+            {visibleRegistrations.map((reg) => (
               <div key={reg._id} className="card p-4 flex gap-4 items-start hover:border-gray-700 transition">
                 {reg.event.image?.url ? (
                   <img src={reg.event.image.url} alt={reg.event.title} className="w-20 h-16 object-cover rounded-lg shrink-0" />
