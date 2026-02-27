@@ -58,15 +58,6 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// JWT Debug Middleware (dev only)
-if (process.env.NODE_ENV !== "production") {
-  app.use((req, res, next) => {
-    console.log("JWT Debug - Path:", req.path);
-    console.log("JWT Debug - Auth Header:", req.headers.authorization);
-    next();
-  });
-}
-
 // Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/events", require("./routes/events"));

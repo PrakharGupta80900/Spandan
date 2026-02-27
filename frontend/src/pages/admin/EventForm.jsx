@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
-import { FiArrowLeft, FiPlus, FiX, FiUpload } from "react-icons/fi";
+import { FiArrowLeft, FiUpload } from "react-icons/fi";
 
 const CATEGORIES = ["Dance", "Music", "Fine Arts", "Literary", "Dramatics"];
 
@@ -11,7 +11,6 @@ const INITIAL_FORM = {
   date: "", time: "", venue: "",
   maxParticipants: "",
   participationType: "solo", teamSizeMin: "2", teamSizeMax: "4",
-  rules: [], coordinators: [],
 };
 
 export default function EventForm() {
@@ -23,8 +22,7 @@ export default function EventForm() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [ruleInput, setRuleInput] = useState("");
-  const [coordInput, setCoordInput] = useState({ name: "", phone: "", email: "" });
+  // Removed rules/coordinators per request
 
   useEffect(() => {
     if (isEdit) {
@@ -42,8 +40,6 @@ export default function EventForm() {
             participationType: event.participationType || "solo",
             teamSizeMin: String(event.teamSize?.min || 2),
             teamSizeMax: String(event.teamSize?.max || 4),
-            rules: event.rules || [],
-            coordinators: event.coordinators || [],
           });
           if (event.image?.url) setImagePreview(event.image.url);
         }
@@ -60,20 +56,6 @@ export default function EventForm() {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  const addRule = () => {
-    if (ruleInput.trim()) {
-      setForm({ ...form, rules: [...form.rules, ruleInput.trim()] });
-      setRuleInput("");
-    }
-  };
-
-  const addCoord = () => {
-    if (coordInput.name.trim()) {
-      setForm({ ...form, coordinators: [...form.coordinators, { ...coordInput }] });
-      setCoordInput({ name: "", phone: "", email: "" });
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -81,8 +63,7 @@ export default function EventForm() {
     const fd = new FormData();
     Object.entries(form).forEach(([key, val]) => {
       if (key === "teamSizeMin" || key === "teamSizeMax") return; // handled separately
-      if (Array.isArray(val)) fd.append(key, JSON.stringify(val));
-      else fd.append(key, val);
+      fd.append(key, val);
     });
     // Send teamSize as JSON
     if (form.participationType === "group") {
@@ -207,51 +188,6 @@ export default function EventForm() {
             )}
             <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
           </label>
-        </div>
-
-        {/* Rules */}
-        <div className="card p-6">
-          <h2 className="font-semibold text-white mb-4">Rules</h2>
-          <div className="flex gap-2 mb-3">
-            <input value={ruleInput} onChange={(e) => setRuleInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addRule())} className="input flex-1" placeholder="Add a rule" />
-            <button type="button" onClick={addRule} className="btn-secondary px-3"><FiPlus /></button>
-          </div>
-          <ol className="space-y-2">
-            {form.rules.map((rule, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                <span className="text-primary-400 font-bold shrink-0">{i + 1}.</span>
-                <span className="flex-1">{rule}</span>
-                <button type="button" onClick={() => setForm({ ...form, rules: form.rules.filter((_, ri) => ri !== i) })} className="text-gray-600 hover:text-red-400">
-                  <FiX size={13} />
-                </button>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* Coordinators */}
-        <div className="card p-6">
-          <h2 className="font-semibold text-white mb-4">Coordinators</h2>
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            <input value={coordInput.name} onChange={(e) => setCoordInput({ ...coordInput, name: e.target.value })} className="input" placeholder="Name" />
-            <input value={coordInput.phone} onChange={(e) => setCoordInput({ ...coordInput, phone: e.target.value })} className="input" placeholder="Phone" />
-            <div className="flex gap-2">
-              <input value={coordInput.email} onChange={(e) => setCoordInput({ ...coordInput, email: e.target.value })} className="input flex-1" placeholder="Email" />
-              <button type="button" onClick={addCoord} className="btn-secondary px-3"><FiPlus /></button>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {form.coordinators.map((c, i) => (
-              <div key={i} className="flex items-center gap-2 bg-gray-800/50 rounded-lg px-3 py-2 text-sm">
-                <span className="text-white font-medium">{c.name}</span>
-                {c.phone && <span className="text-gray-400">• {c.phone}</span>}
-                {c.email && <span className="text-gray-400">• {c.email}</span>}
-                <button type="button" className="ml-auto text-gray-500 hover:text-red-400" onClick={() => setForm({ ...form, coordinators: form.coordinators.filter((_, ci) => ci !== i) })}>
-                  <FiX size={13} />
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Submit */}

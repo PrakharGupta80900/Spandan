@@ -55,8 +55,8 @@ export default function Events() {
             onClick={() => setCategory(cat)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
               category === cat
-                ? "bg-primary-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                ? "bg-[#F8F3E1] text-black border border-black/20"
+                : "bg-[#F8F3E1] text-black border border-black/15 hover:bg-[#E3DBBB]"
             }`}
           >
             {cat}

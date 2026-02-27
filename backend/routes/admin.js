@@ -7,7 +7,37 @@ const Event = require("../models/Event");
 const User = require("../models/User");
 const Registration = require("../models/Registration");
 const { isAdmin } = require("../middleware/adminAuth");
-const { sendMail } = require("../utils/mailer");
+
+// Recompute registeredCount per event from active registrations
+async function recomputeRegisteredCounts() {
+  const counts = await Registration.aggregate([
+    { $match: { status: { $ne: "cancelled" } } },
+    { $group: { _id: "$event", total: { $sum: 1 } } },
+  ]);
+
+  const bulkOps = counts.map((c) => ({
+    updateOne: {
+      filter: { _id: c._id },
+      update: { $set: { registeredCount: c.total } },
+    },
+  }));
+
+  // reset events with zero
+  const countedIds = new Set(counts.map((c) => String(c._id)));
+  const allEvents = await Event.find({}, "_id");
+  allEvents.forEach((e) => {
+    if (!countedIds.has(String(e._id))) {
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: e._id },
+          update: { $set: { registeredCount: 0 } },
+        },
+      });
+    }
+  });
+
+  if (bulkOps.length) await Event.bulkWrite(bulkOps);
+}
 
 // Cloudinary Config
 cloudinary.config({
@@ -30,7 +60,10 @@ function uploadToCloudinary(buffer) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder: "spandan2026/events", transformation: [{ width: 1200, height: 630, crop: "limit" }] },
-      (error, result) => { if (error) reject(error); else resolve(result); }
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
     );
     streamifier.createReadStream(buffer).pipe(stream);
   });
@@ -39,15 +72,66 @@ function uploadToCloudinary(buffer) {
 // ── ADMIN DASHBOARD STATS ──────────────────────────────────
 router.get("/stats", isAdmin, async (req, res) => {
   try {
-    const [totalEvents, listedEvents, totalUsers, totalRegistrations] =
-      await Promise.all([
-        Event.countDocuments(),
-        Event.countDocuments({ isListed: true }),
-        User.countDocuments({ role: "user" }),
-        Registration.countDocuments({ status: "confirmed" }),
-      ]);
+    // Ensure counts are fresh before reporting
+    await recomputeRegisteredCounts();
 
+    const [totalEvents, listedEvents, totalUsers, totalRegistrations] = await Promise.all([
+      Event.countDocuments(),
+      Event.countDocuments({ isListed: true }),
+      User.countDocuments({ role: "user" }),
+      Registration.countDocuments({ status: "confirmed" }),
+    ]);
+
+    res.set("Cache-Control", "no-store");
     res.json({ totalEvents, listedEvents, totalUsers, totalRegistrations });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET ALL USERS (admin) ────────────────────────────────
+router.get("/users", isAdmin, async (req, res) => {
+  try {
+    const users = await User.find({ role: "user" })
+      .select("-password -__v")
+      .sort({ createdAt: -1 });
+    res.set("Cache-Control", "no-store");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE USER (admin) ─────────────────────────────────
+router.delete("/users/:id", isAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user.role === "admin") return res.status(400).json({ error: "Cannot delete admin accounts" });
+
+    // Collect this user's registrations to fix counts before deletion
+    const registrations = await Registration.find({ user: userId }, "event");
+    if (registrations.length) {
+      const eventCountMap = registrations.reduce((acc, reg) => {
+        const key = String(reg.event);
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+      const bulkEvents = Object.entries(eventCountMap).map(([eventId, count]) => ({
+        updateOne: {
+          filter: { _id: eventId },
+          update: { $inc: { registeredCount: -count } },
+        },
+      }));
+      if (bulkEvents.length) await Event.bulkWrite(bulkEvents);
+
+      await Registration.deleteMany({ user: userId });
+    }
+
+    await user.deleteOne();
+    res.json({ message: "User deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -66,20 +150,17 @@ router.get("/events", isAdmin, async (req, res) => {
 // ── CREATE EVENT ───────────────────────────────────────────
 router.post("/events", isAdmin, upload.single("image"), async (req, res) => {
   try {
-    const {
-      title, description, category, date, time,
-      venue, maxParticipants, rules, coordinators,
-      participationType, teamSize,
-    } = req.body;
+    const { title, description, category, date, time, venue, maxParticipants, participationType, teamSize } = req.body;
 
     const eventData = {
-      title, description, category,
+      title,
+      description,
+      category,
       date: new Date(date),
-      time, venue,
+      time,
+      venue,
       maxParticipants: parseInt(maxParticipants),
       participationType: participationType || "solo",
-      rules: rules ? JSON.parse(rules) : [],
-      coordinators: coordinators ? JSON.parse(coordinators) : [],
       createdBy: req.user._id,
     };
 
@@ -106,20 +187,17 @@ router.put("/events/:id", isAdmin, upload.single("image"), async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    const {
-      title, description, category, date, time,
-      venue, maxParticipants, rules, coordinators,
-      participationType, teamSize,
-    } = req.body;
+    const { title, description, category, date, time, venue, maxParticipants, participationType, teamSize } = req.body;
 
     const updateData = {
-      title, description, category,
+      title,
+      description,
+      category,
       date: date ? new Date(date) : event.date,
-      time, venue,
+      time,
+      venue,
       maxParticipants: maxParticipants ? parseInt(maxParticipants) : event.maxParticipants,
       participationType: participationType || event.participationType || "solo",
-      rules: rules ? JSON.parse(rules) : event.rules,
-      coordinators: coordinators ? JSON.parse(coordinators) : event.coordinators,
     };
 
     if ((participationType || event.participationType) === "group" && teamSize) {
@@ -194,10 +272,10 @@ router.get("/events/:id/registrations", isAdmin, async (req, res) => {
 // ── DELETE A REGISTRATION (ADMIN) ───────────────────────
 router.delete("/registrations/:id", isAdmin, async (req, res) => {
   try {
-    const registration = await Registration.findById(req.params.id);
+    const registration = await Registration.findById(req.params.id).populate("event");
     if (!registration) return res.status(404).json({ error: "Registration not found" });
 
-    const eventId = registration.event;
+    const eventId = registration.event?._id;
     await registration.deleteOne();
 
     if (eventId) {
@@ -214,15 +292,17 @@ router.delete("/registrations/:id", isAdmin, async (req, res) => {
 router.patch("/registrations/:id", isAdmin, async (req, res) => {
   try {
     const { teamName } = req.body;
-    const registration = await Registration.findById(req.params.id).populate("event").populate("user", "college pid");
+    const registration = await Registration.findById(req.params.id).populate("event");
     if (!registration) return res.status(404).json({ error: "Registration not found" });
 
     if (!registration.event) {
       return res.status(400).json({ error: "Registration is missing event context" });
     }
+
     if (registration.event.participationType !== "group") {
-      return res.status(400).json({ error: "Only team registrations can be edited" });
+      return res.status(400).json({ error: "Only group registrations can be updated" });
     }
+
     if (!teamName || !teamName.trim()) {
       return res.status(400).json({ error: "Team name is required" });
     }
@@ -230,55 +310,7 @@ router.patch("/registrations/:id", isAdmin, async (req, res) => {
     registration.teamName = teamName.trim();
     await registration.save();
 
-    res.json({ message: "Team updated", registration });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── GET ALL USERS ──────────────────────────────────────────
-router.get("/users", isAdmin, async (req, res) => {
-  try {
-    const users = await User.find({ role: "user" })
-      .select("-__v -googleId")
-      .sort({ createdAt: -1 });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── DELETE A USER (ADMIN) ─────────────────────────────────
-router.delete("/users/:id", isAdmin, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    if (user.role === "admin") return res.status(400).json({ error: "Cannot delete admin accounts" });
-
-    const registrations = await Registration.find({ user: req.params.id }).select("event");
-    const eventCounts = registrations.reduce((acc, reg) => {
-      if (reg.event) acc[reg.event] = (acc[reg.event] || 0) + 1;
-      return acc;
-    }, {});
-
-    if (registrations.length > 0) {
-      await Registration.deleteMany({ user: req.params.id });
-      await Promise.all(
-        Object.entries(eventCounts).map(([eventId, count]) =>
-          Event.findByIdAndUpdate(eventId, { $inc: { registeredCount: -count } })
-        )
-      );
-    }
-
-    await user.deleteOne();
-    // Fire-and-forget notification email
-    sendMail({
-      to: user.email,
-      subject: "Your Spandan account has been deleted",
-      text: `Hi ${user.name || "Participant"},\n\nYour account (PID: ${user.pid || ""}) has been deleted by an administrator.\nIf this was unexpected, please contact support.\nWith Regards\nPrakhar Gupta \nVice-President`,
-    }).catch(() => {});
-
-    res.json({ message: "User deleted" });
+    res.json({ message: "Registration updated", registration });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

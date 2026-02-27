@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 import toast from "react-hot-toast";
-import { FiCalendar, FiMapPin, FiX, FiUser, FiCopy } from "react-icons/fi";
+import { FiCalendar, FiMapPin, FiX, FiCopy } from "react-icons/fi";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -42,21 +42,21 @@ export default function Dashboard() {
         {user?.avatar ? (
           <img src={user.avatar} alt={user.name} className="w-16 h-16 rounded-full object-cover ring-2 ring-primary-500" />
         ) : (
-          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center text-2xl font-bold text-white">
+          <div className="w-16 h-16 bg-[#AEB784] rounded-full flex items-center justify-center text-2xl font-bold !text-black">
             {user?.name?.[0]?.toUpperCase()}
           </div>
         )}
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-white">{user?.name}</h1>
           <p className="text-gray-400 text-sm">{user?.email}</p>
-          {user?.college && <p className="text-gray-500 text-sm">{user.college} • {user.department}</p>}
+          {user?.college && <p className="text-gray-500 text-sm">{user.college}</p>}
         </div>
-        <div className="text-center bg-primary-900/40 border border-primary-700/50 rounded-xl px-6 py-3">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Participant ID</p>
+        <div className="text-center bg-[#AEB784] border border-[#41431B] rounded-xl px-6 py-3">
+          <p className="text-xs !text-black uppercase tracking-wider mb-1">Participant ID</p>
           <div className="flex items-center gap-2">
-            <p className="text-primary-300 font-mono font-bold text-xl">{user?.pid || "—"}</p>
+            <p className="!text-black font-mono font-bold text-xl">{user?.pid || "-"}</p>
             {user?.pid && (
-              <button onClick={copyPid} className="text-gray-500 hover:text-primary-400 transition">
+              <button onClick={copyPid} className="!text-black/70 hover:!text-black transition">
                 <FiCopy size={14} />
               </button>
             )}
@@ -68,7 +68,7 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">My Registrations</h2>
-          <span className="badge bg-primary-900 text-primary-300">{registrations.length} events</span>
+          <span className="badge bg-[#E3DBBB]">{registrations.length} events</span>
         </div>
 
         {loading ? (
@@ -81,7 +81,7 @@ export default function Dashboard() {
           <div className="card p-12 text-center">
             <FiCalendar size={40} className="mx-auto text-gray-600 mb-3" />
             <p className="text-gray-400 mb-4">You haven't registered for any events yet.</p>
-            <Link to="/" className="btn-primary inline-block">Browse Events</Link>
+            <Link to="/events" className="inline-block bg-[#AEB784] !text-black font-bold px-5 py-2.5 rounded-lg hover:bg-[#9ea876] transition">Browse Events</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -101,7 +101,7 @@ export default function Dashboard() {
                     </Link>
                     <span className="badge bg-green-900/60 text-green-300 shrink-0">Confirmed</span>
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-gray-400">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-[#F8F3E1]">
                     <span className="flex items-center gap-1">
                       <FiCalendar size={11} />
                       {new Date(reg.event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
@@ -111,14 +111,16 @@ export default function Dashboard() {
                       {reg.event.venue}
                     </span>
                     <span className="text-primary-400 font-mono">PID {reg.pid}</span>
-                    {reg.tid && <span className="text-orange-400 font-mono font-bold">TID: {reg.tid}</span>}
-                    {reg.teamName && <span className="text-orange-300">{reg.teamName}</span>}
+                    {reg.tid && <span className="text-lime-400 font-mono font-bold">TID: {reg.tid}</span>}
+                    {reg.teamName && <span className="text-lime-300">{reg.teamName}</span>}
+                    {reg.teamName && !reg.isLeader && <span className="badge bg-blue-900/60 text-blue-300">Team Member</span>}
                   </div>
                 </div>
                 <button
                   onClick={() => handleCancel(reg.event._id)}
-                  className="text-gray-600 hover:text-red-400 transition shrink-0 p-1"
-                  title="Cancel registration"
+                  className="text-gray-600 hover:text-red-400 transition shrink-0 p-1 disabled:opacity-40 disabled:hover:text-gray-600"
+                  title={reg.canCancel ? "Cancel registration" : "Only team leader can cancel"}
+                  disabled={!reg.canCancel}
                 >
                   <FiX size={16} />
                 </button>
@@ -130,3 +132,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

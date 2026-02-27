@@ -4,13 +4,13 @@ import API from "../../api/axios";
 import toast from "react-hot-toast";
 import {
   FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPlus,
-  FiUsers, FiCalendar, FiArrowLeft,
+  FiUsers, FiCalendar, FiArrowLeft, FiRefreshCw,
 } from "react-icons/fi";
 
 const CATEGORY_COLORS = {
   Dance: "bg-pink-900/60 text-pink-300",
   Music: "bg-blue-900/60 text-blue-300",
-  "Fine Arts": "bg-orange-900/60 text-orange-300",
+  "Fine Arts": "bg-lime-900/60 text-lime-300",
   Literary: "bg-yellow-900/60 text-yellow-300",
   Dramatics: "bg-red-900/60 text-red-300",
   Other: "bg-gray-800 text-gray-300",
@@ -19,12 +19,24 @@ const CATEGORY_COLORS = {
 export default function ManageEvents() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    API.get("/admin/events")
-      .then(({ data }) => setEvents(data))
-      .finally(() => setLoading(false));
+    fetchEvents();
   }, []);
+
+  const fetchEvents = async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await API.get("/admin/events");
+      setEvents(data);
+    } catch {
+      toast.error("Failed to fetch events");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   const handleToggle = async (id) => {
     try {
@@ -56,6 +68,14 @@ export default function ManageEvents() {
           <FiArrowLeft size={18} />
         </Link>
         <h1 className="text-2xl font-bold text-white flex-1">Manage Events</h1>
+        <button
+          onClick={fetchEvents}
+          disabled={refreshing}
+          className="btn-secondary flex items-center gap-2"
+        >
+          <FiRefreshCw className={refreshing ? "animate-spin" : ""} size={15} />
+          {refreshing ? "Refreshing" : "Refresh"}
+        </button>
         <Link to="/admin/events/new" className="btn-primary flex items-center gap-2">
           <FiPlus size={15} /> New Event
         </Link>

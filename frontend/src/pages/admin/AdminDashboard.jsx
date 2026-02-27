@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import API from "../../api/axios";
-import { FiCalendar, FiUsers, FiList, FiCheckSquare } from "react-icons/fi";
+import { FiCalendar, FiUsers, FiList, FiCheckSquare, FiRefreshCw } from "react-icons/fi";
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
@@ -17,10 +17,23 @@ function StatCard({ icon: Icon, label, value, color }) {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    API.get("/admin/stats").then(({ data }) => setStats(data));
+    fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await API.get("/admin/stats", { params: { _t: Date.now() } });
+      setStats(data);
+    } catch (err) {
+      // keep previous stats on error
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -29,14 +42,24 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-black text-white">Admin Dashboard</h1>
           <p className="text-gray-400 mt-1">Spandan 2026 Control Panel</p>
         </div>
-        <Link to="/admin/events/new" className="btn-primary">+ New Event</Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchStats}
+            disabled={refreshing}
+            className="btn-secondary flex items-center gap-2"
+          >
+            <FiRefreshCw className={refreshing ? "animate-spin" : ""} size={16} />
+            {refreshing ? "Refreshing" : "Refresh"}
+          </button>
+          <Link to="/admin/events/new" className="btn-primary">+ New Event</Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard icon={FiCalendar} label="Total Events" value={stats?.totalEvents} color="bg-blue-600" />
         <StatCard icon={FiCheckSquare} label="Listed Events" value={stats?.listedEvents} color="bg-green-600" />
         <StatCard icon={FiUsers} label="Registered Users" value={stats?.totalUsers} color="bg-purple-600" />
-        <StatCard icon={FiList} label="Registrations" value={stats?.totalRegistrations} color="bg-orange-600" />
+        <StatCard icon={FiList} label="Registrations" value={stats?.totalRegistrations} color="bg-lime-600" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">

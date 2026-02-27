@@ -24,7 +24,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+      <div className="min-h-screen flex items-center justify-center bg-[#AEB784]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-400">Loading Spandan 2026...</p>
@@ -34,7 +34,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-[#AEB784]">
       <Navbar />
       <Routes>
         {/* Public */}

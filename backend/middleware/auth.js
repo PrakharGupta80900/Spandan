@@ -12,7 +12,6 @@ const isAuthenticated = (req, res, next) => {
     req.user = decoded;
     return next();
   } catch (err) {
-    console.log('JWT verification failed:', err.message);
     return res.status(401).json({ error: "Invalid token. Please log in again." });
   }
 };

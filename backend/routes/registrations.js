@@ -4,7 +4,6 @@ const Registration = require("../models/Registration");
 const Event = require("../models/Event");
 const User = require("../models/User");
 const { isAuthenticated } = require("../middleware/auth");
-const { sendMail } = require("../utils/mailer");
 
 // Register for an event
 router.post("/:eventId", isAuthenticated, async (req, res) => {
@@ -17,8 +16,11 @@ router.post("/:eventId", isAuthenticated, async (req, res) => {
     const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
     if (!event.isListed) return res.status(400).json({ error: "Event is not open for registration" });
-    if (event.registeredCount >= event.maxParticipants) {
-      return res.status(400).json({ error: "Event is full" });
+    // Check if event is full: each registration counts as 1 team slot
+    const currentRegistrations = await Registration.countDocuments({ event: req.params.eventId, status: { $ne: "cancelled" } });
+    if (currentRegistrations + 1 > event.maxParticipants) {
+      const remaining = Math.max(event.maxParticipants - currentRegistrations, 0);
+      return res.status(400).json({ error: `Not enough spots available. Event has ${remaining} slots remaining.` });
     }
 
     // Check if already registered
@@ -82,22 +84,12 @@ router.post("/:eventId", isAuthenticated, async (req, res) => {
 
     const registration = await Registration.create(regData);
 
-    // Increment registered count
+    // Increment registered count by 1 team slot
     await Event.findByIdAndUpdate(req.params.eventId, {
       $inc: { registeredCount: 1 },
     });
 
     await registration.populate("event", "title date venue category image");
-
-    // Fire-and-forget registration email
-    const eventDate = registration.event?.date
-      ? new Date(registration.event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-      : "";
-    sendMail({
-      to: req.user.email,
-      subject: `Registered for ${registration.event?.title || "event"}`,
-      text: `Hi ${req.user.name || "Participant"},\n\nYour registration is confirmed.\nEvent: ${registration.event?.title || ""}\nCategory: ${registration.event?.category || ""}\nVenue: ${registration.event?.venue || ""}\nDate: ${eventDate}\nPID: ${req.user.pid}${registration.tid ? `\nTID: ${registration.tid}` : ""}${registration.teamName ? `\nTeam: ${registration.teamName}` : ""}\n\nSee you at the fest!\n\nPrakhar Gupta \nVice-President 2026`,
-    }).catch(() => {});
 
     res.status(201).json(registration);
   } catch (err) {
@@ -112,13 +104,25 @@ router.post("/:eventId", isAuthenticated, async (req, res) => {
 router.get("/my/all", isAuthenticated, async (req, res) => {
   try {
     const registrations = await Registration.find({
-      user: req.user._id,
+      $or: [
+        { user: req.user._id },
+        { "teamMembers.pid": req.user.pid },
+      ],
       status: { $ne: "cancelled" },
     })
       .populate("event", "title date venue category image isListed")
       .sort({ createdAt: -1 });
 
-    res.json(registrations);
+    const result = registrations.map((reg) => {
+      const isLeader = String(reg.user) === String(req.user._id);
+      return {
+        ...reg.toObject(),
+        isLeader,
+        canCancel: isLeader,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -136,6 +140,7 @@ router.delete("/:eventId", isAuthenticated, async (req, res) => {
       return res.status(404).json({ error: "Registration not found" });
     }
 
+    // Decrement by 1 team slot
     await Event.findByIdAndUpdate(req.params.eventId, {
       $inc: { registeredCount: -1 },
     });

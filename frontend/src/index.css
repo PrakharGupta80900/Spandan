@@ -4,7 +4,22 @@
 
 @layer base {
   body {
-    @apply bg-gray-950 text-gray-100 font-sans antialiased;
+    @apply text-black font-sans antialiased;
+    background-color: #aeb784;
+    background-image: none;
+  }
+  h1, h2, h3, h4, h5, h6, p, span, a, li, label, strong, em, small, th, td, button, input, textarea, select {
+    color: #000 !important;
+  }
+  ::placeholder {
+    color: rgba(0, 0, 0, 0.65) !important;
+  }
+  .home-nav, .home-nav * {
+    color: #fff !important;
+  }
+  .home-nav .btn-primary,
+  .home-nav .btn-secondary {
+    color: #000 !important;
   }
   ::-webkit-scrollbar {
     @apply w-1.5;
@@ -19,16 +34,29 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply text-primary-900 font-bold px-5 py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: #f8f3e1;
+    box-shadow: 0 8px 22px rgba(65, 67, 27, 0.2);
   }
   .btn-secondary {
-    @apply bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500/10 font-semibold px-5 py-2.5 rounded-lg transition-all duration-200;
+    @apply border font-semibold px-5 py-2.5 rounded-lg transition-all duration-200;
+    background: #f8f3e1;
+    border-color: rgba(65, 67, 27, 0.3);
+    color: rgb(65, 67, 27);
+  }
+  .btn-secondary:hover {
+    background-color: rgba(227, 219, 187, 0.9);
   }
   .card {
-    @apply bg-gray-900 border border-gray-800 rounded-2xl;
+    @apply border rounded-2xl;
+    background: #f8f3e1;
+    border-color: rgba(65, 67, 27, 0.18);
+    box-shadow: 0 10px 24px rgba(65, 67, 27, 0.14);
   }
   .input {
-    @apply w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-500 transition;
+    @apply w-full rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:border-transparent transition;
+    background: #f8f3e1;
+    border: 1px solid rgba(65, 67, 27, 0.24);
   }
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
@@ -44,8 +72,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { text-shadow: 0 0 12px rgba(167, 139, 250, 0.35), 0 0 36px rgba(236, 72, 153, 0.25); opacity: 0.96; }
-  50% { text-shadow: 0 0 20px rgba(236, 72, 153, 0.55), 0 0 48px rgba(59, 130, 246, 0.35); opacity: 1; }
+  0%, 100% { text-shadow: 0 0 12px rgba(227, 219, 187, 0.35), 0 0 36px rgba(174, 183, 132, 0.2); opacity: 0.96; }
+  50% { text-shadow: 0 0 20px rgba(248, 243, 225, 0.5), 0 0 46px rgba(174, 183, 132, 0.3); opacity: 1; }
 }
 .hero-glow {
   animation: pulse-glow 3.6s ease-in-out infinite;
@@ -56,7 +84,18 @@
   letter-spacing: 0.015em;
 }
 
+.utsarga-font {
+  font-family: "Camel Lake", "Brush Script MT", "Lucida Handwriting", "Segoe Script", cursive;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+
 @keyframes bgFadeIn {
   from { opacity: 0; }
-  to   { opacity: 1; }
+  to   { opacity: 0.6; }
+}
+
+@keyframes bgFadeOut {
+  from { opacity: 0.6; }
+  to   { opacity: 0; }
 }

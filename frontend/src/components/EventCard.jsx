@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import { FiCalendar, FiMapPin, FiUsers, FiTag } from "react-icons/fi";
+import { FiCalendar, FiMapPin, FiUsers } from "react-icons/fi";
 
 const CATEGORY_COLORS = {
-  Dance: "bg-pink-900/60 text-pink-300",
-  Music: "bg-blue-900/60 text-blue-300",
-  "Fine Arts": "bg-orange-900/60 text-orange-300",
-  Literary: "bg-yellow-900/60 text-yellow-300",
-  Dramatics: "bg-red-900/60 text-red-300",
-  Other: "bg-gray-800 text-gray-300",
+  Dance: "bg-[#E3DBBB] !text-black",
+  Music: "bg-[#E3DBBB] !text-black",
+  "Fine Arts": "bg-[#E3DBBB] !text-black",
+  Literary: "bg-[#E3DBBB] !text-black",
+  Dramatics: "bg-[#E3DBBB] !text-black",
+  Other: "bg-[#E3DBBB] !text-black",
 };
 
 export default function EventCard({ event }) {
@@ -16,18 +16,21 @@ export default function EventCard({ event }) {
   const fillPercent = Math.min((event.registeredCount / event.maxParticipants) * 100, 100);
 
   return (
-    <Link to={`/events/${event._id}`} className="group card overflow-hidden hover:border-primary-700 transition-all duration-300 hover:shadow-xl hover:shadow-primary-900/20 block">
+    <Link
+      to={`/events/${event._id}`}
+      className="group card border border-[#41431B] overflow-hidden hover:border-[#41431B] transition-all duration-300 hover:shadow-xl hover:shadow-primary-900/20 block"
+    >
       {/* Image */}
-      <div className="relative h-44 bg-gradient-to-br from-primary-900 to-gray-900 overflow-hidden">
+      <div className="relative h-44 bg-[#E3DBBB] overflow-hidden">
         {event.image?.url ? (
           <img
             src={event.image.url}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <FiCalendar size={40} className="text-primary-700" />
+            <FiCalendar size={40} className="text-[#41431B]" />
           </div>
         )}
         <div className="absolute top-3 left-3">
@@ -53,14 +56,13 @@ export default function EventCard({ event }) {
           <div className="flex items-center gap-2">
             <FiCalendar size={13} className="text-primary-400 shrink-0" />
             <span>{new Date(event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-            {event.time && <span className="text-gray-500">• {event.time}</span>}
+            {event.time && <span className="text-gray-500">- {event.time}</span>}
           </div>
           <div className="flex items-center gap-2">
             <FiMapPin size={13} className="text-primary-400 shrink-0" />
             <span className="truncate">{event.venue}</span>
           </div>
         </div>
-
         {/* Spots */}
         <div className="mt-4">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
@@ -80,3 +82,4 @@ export default function EventCard({ event }) {
     </Link>
   );
 }
+

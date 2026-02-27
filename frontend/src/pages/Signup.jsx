@@ -67,13 +67,13 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-10 bg-gray-950">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-10 bg-[#AEB784]">
       <div className="w-full max-w-lg">
-        <div className="card p-8">
+        <div className="card p-8 !bg-white/20 backdrop-blur-xl border border-white/35 shadow-[0_20px_50px_rgba(65,67,27,0.25)]">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-black text-xl">S</span>
+            <div className="w-16 h-16 bg-gradient-to-br from-[#E3DBBB] to-[#AEB784] rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="!text-black font-black text-xl">S</span>
             </div>
             <h1 className="text-2xl font-bold text-white">Create Your Account</h1>
             <p className="text-gray-400 text-sm mt-1">
@@ -216,3 +216,4 @@ className={`input pl-10 ${form.confirmPassword && !pwdMatch ? 'ring-2 ring-red-5
     </div>
   );
 }
+

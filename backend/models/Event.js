@@ -60,14 +60,6 @@ const eventSchema = new mongoose.Schema(
       min: { type: Number, default: 2 },
       max: { type: Number, default: 4 },
     },
-    rules: [String],
-    coordinators: [
-      {
-        name: String,
-        phone: String,
-        email: String,
-      },
-    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -19,7 +19,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               color: "#f9fafb",
               border: "1px solid #374151",
             },
-            success: { iconTheme: { primary: "#a855f7", secondary: "#fff" } },
+            success: {
+              style: {
+                background: "#AEB784",
+                color: "#000000",
+                border: "1px solid #41431B",
+              },
+              iconTheme: { primary: "#41431B", secondary: "#AEB784" },
+            },
           }}
         />
       </AuthProvider>

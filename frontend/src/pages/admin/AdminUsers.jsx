@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import API from "../../api/axios";
-import { FiArrowLeft, FiSearch, FiDownload, FiUsers, FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiSearch, FiDownload, FiUsers, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 export default function AdminUsers() {
@@ -9,11 +9,24 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchUsers = async ({ initial = false } = {}) => {
+    if (initial) setLoading(true);
+    setRefreshing(true);
+    try {
+      const { data } = await API.get("/admin/users", { params: { _t: Date.now() } });
+      setUsers(data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to load users");
+    } finally {
+      if (initial) setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    API.get("/admin/users")
-      .then(({ data }) => setUsers(data))
-      .finally(() => setLoading(false));
+    fetchUsers({ initial: true });
   }, []);
 
   const filtered = users.filter(
@@ -40,8 +53,8 @@ export default function AdminUsers() {
   };
 
   const exportCSV = () => {
-    const headers = ["PID", "Name", "Email", "Phone", "College", "Department", "Joined"];
-    const rows = filtered.map((u) => [u.pid, u.name, u.email, u.phone, u.college, u.department, new Date(u.createdAt).toLocaleDateString("en-IN")]);
+    const headers = ["PID", "Name", "Email", "Phone", "College", "Joined"];
+    const rows = filtered.map((u) => [u.pid, u.name, u.email, u.phone, u.college, new Date(u.createdAt).toLocaleDateString("en-IN")]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v || ""}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -53,9 +66,19 @@ export default function AdminUsers() {
       <div className="flex items-center gap-4 mb-8">
         <Link to="/admin" className="text-gray-400 hover:text-white"><FiArrowLeft size={18} /></Link>
         <h1 className="text-2xl font-bold text-white flex-1">All Participants</h1>
-        <button onClick={exportCSV} className="btn-secondary flex items-center gap-2 text-sm">
-          <FiDownload size={14} /> Export CSV
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fetchUsers()}
+            disabled={refreshing}
+            className="btn-secondary flex items-center gap-2 text-sm"
+          >
+            <FiRefreshCw className={refreshing ? "animate-spin" : ""} size={14} />
+            {refreshing ? "Refreshing" : "Refresh"}
+          </button>
+          <button onClick={exportCSV} className="btn-secondary flex items-center gap-2 text-sm">
+            <FiDownload size={14} /> Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="mb-4 relative">
@@ -103,8 +126,8 @@ export default function AdminUsers() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{u.email}</td>
-                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{u.phone || "—"}</td>
-                    <td className="px-4 py-3 text-gray-400 max-w-[160px] truncate">{u.college || "—"}</td>
+                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{u.phone || "-"}</td>
+                    <td className="px-4 py-3 text-gray-400 max-w-[160px] truncate">{u.college || "-"}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                       {new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
@@ -128,3 +151,4 @@ export default function AdminUsers() {
     </div>
   );
 }
+

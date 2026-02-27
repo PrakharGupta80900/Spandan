@@ -1,17 +1,20 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const Registration = require("./Registration");
+const Event = require("./Event");
 
 const userSchema = new mongoose.Schema(
   {
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
     name: {
       type: String,
       required: true,
       trim: true,
+      validate: {
+        validator: function(v) {
+          return /^[a-zA-Z\s]{2,}$/.test(v.trim());
+        },
+        message: "Name can only contain letters and spaces, and must be at least 2 characters long"
+      }
     },
     email: {
       type: String,
@@ -35,11 +38,24 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      default: "",
+      required: true,
+      validate: {
+        validator: function(v) {
+          return /^[0-9]{10}$/.test(v.trim());
+        },
+        message: "Phone number must be exactly 10 digits"
+      }
     },
     college: {
       type: String,
-      default: "",
+      required: true,
+      trim: true,
+      validate: {
+        validator: function(v) {
+          return /^[a-zA-Z\s&]{2,}$/.test(v.trim());
+        },
+        message: "College name can only contain letters, spaces, and & symbol, and must be at least 2 characters long"
+      }
     },
     role: {
       type: String,
@@ -70,5 +86,66 @@ userSchema.methods.comparePassword = async function (candidate) {
   if (!this.password) return false;
   return bcrypt.compare(candidate, this.password);
 };
+
+// Clean up registrations when user is deleted
+userSchema.pre("deleteOne", { document: true, query: false }, async function() {
+  try {
+    const registrations = await Registration.find({ user: this._id }).populate("event");
+    const eventCounts = {};
+    
+    // Calculate actual spot counts for each event
+    registrations.forEach(reg => {
+      if (reg.event) {
+        const spotsUsed = reg.event.participationType === "group" 
+          ? (reg.teamMembers ? reg.teamMembers.length + 1 : 1)  // +1 for the registrant
+          : 1;  // Solo events = 1 spot
+        eventCounts[reg.event._id] = (eventCounts[reg.event._id] || 0) + spotsUsed;
+      }
+    });
+    
+    await Registration.deleteMany({ user: this._id });
+    
+    // Update event counts
+    await Promise.all(
+      Object.entries(eventCounts).map(([eventId, count]) =>
+        Event.findByIdAndUpdate(eventId, { $inc: { registeredCount: -count } })
+      )
+    );
+  } catch (err) {
+    console.error("Error cleaning up registrations:", err);
+  }
+});
+
+// Also handle deleteMany
+userSchema.pre("deleteMany", { document: false, query: true }, async function() {
+  try {
+    const users = await this.model.find(this.getFilter()).select("_id");
+    const userIds = users.map(user => user._id);
+    
+    const registrations = await Registration.find({ user: { $in: userIds } }).populate("event");
+    const eventCounts = {};
+    
+    // Calculate actual spot counts for each event
+    registrations.forEach(reg => {
+      if (reg.event) {
+        const spotsUsed = reg.event.participationType === "group" 
+          ? (reg.teamMembers ? reg.teamMembers.length + 1 : 1)  // +1 for the registrant
+          : 1;  // Solo events = 1 spot
+        eventCounts[reg.event._id] = (eventCounts[reg.event._id] || 0) + spotsUsed;
+      }
+    });
+    
+    await Registration.deleteMany({ user: { $in: userIds } });
+    
+    // Update event counts
+    await Promise.all(
+      Object.entries(eventCounts).map(([eventId, count]) =>
+        Event.findByIdAndUpdate(eventId, { $inc: { registeredCount: -count } })
+      )
+    );
+  } catch (err) {
+    console.error("Error cleaning up registrations:", err);
+  }
+});
 
 module.exports = mongoose.model("User", userSchema);

@@ -137,7 +137,7 @@ export default function EventRegistrations() {
           <h1 className="text-2xl font-bold text-white">Registrations</h1>
           <p className="text-gray-400 text-sm">
             {eventName}
-            {isGroup && <span className="ml-2 badge bg-orange-900/60 text-orange-300 text-[10px]">Group</span>}
+            {isGroup && <span className="ml-2 badge bg-lime-900/60 text-lime-300 text-[10px]">Group</span>}
           </p>
         </div>
         <button onClick={exportCSV} className="btn-secondary flex items-center gap-2 text-sm">
@@ -183,8 +183,8 @@ export default function EventRegistrations() {
                   <tr key={reg._id} className="hover:bg-gray-900/50 transition">
                     {isGroup && (
                       <>
-                        <td className="px-4 py-3 text-orange-400 font-mono text-xs font-bold whitespace-nowrap">{reg.tid || "—"}</td>
-                        <td className="px-4 py-3 text-orange-300 font-medium whitespace-nowrap">{reg.teamName || "—"}</td>
+                        <td className="px-4 py-3 text-lime-400 font-mono text-xs font-bold whitespace-nowrap">{reg.tid || "—"}</td>
+                        <td className="px-4 py-3 text-lime-300 font-medium whitespace-nowrap">{reg.teamName || "—"}</td>
                       </>
                     )}
                     <td className="px-4 py-3 whitespace-nowrap">

@@ -3,17 +3,38 @@ const router = express.Router();
 const { isAuthenticated } = require("../middleware/auth");
 const User = require("../models/User");
 const { generatePID } = require("../config/passport");
-const { sendMail } = require("../utils/mailer");
 const { generateToken } = require("../utils/jwt");
 
 // ── LOCAL SIGNUP ───────────────────────────────────────────
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, phone, college, department, year } = req.body;
+    const { name, email, password, phone, college } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "Name, email and password are required" });
+    if (!name || !email || !password || !phone || !college) {
+      return res.status(400).json({ error: "All fields are required: name, email, password, phone, and college" });
     }
+    
+    // Name validation - text only, min 2 characters
+    if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
+      return res.status(400).json({ error: "Name can only contain letters and spaces" });
+    }
+    if (name.trim().length < 2) {
+      return res.status(400).json({ error: "Name must be at least 2 characters long" });
+    }
+    
+    // Phone validation - exactly 10 digits only (now required)
+    if (!/^[0-9]{10}$/.test(phone.trim())) {
+      return res.status(400).json({ error: "Phone number must be exactly 10 digits" });
+    }
+    
+    // College validation - text only, min 2 characters
+    if (!/^[a-zA-Z\s&]+$/.test(college.trim())) {
+      return res.status(400).json({ error: "College name can only contain letters, spaces, and & symbol" });
+    }
+    if (college.trim().length < 2) {
+      return res.status(400).json({ error: "College name must be at least 2 characters long" });
+    }
+    
     if (password.length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
@@ -33,21 +54,12 @@ router.post("/signup", async (req, res) => {
       name: name.trim(),
       email: email.toLowerCase().trim(),
       password,
-      phone: phone || "",
-      college: college || "",
-      department: department || "",
-      year: year || "",
+      phone: phone.trim(),
+      college: college.trim(),
       pid,
       role: isAdmin ? "admin" : "user",
       isVerified: true,
     });
-
-    // Fire-and-forget welcome email
-    sendMail({
-      to: user.email,
-      subject: "Welcome to Spandan 2026",
-      text: `Hi ${user.name},\n\nYour account has been created successfully.\nPID: ${user.pid}\n\nYou can now register for events.\n\nwith Regards\nPrakhar Gupta \nVice-President`,
-    }).catch(() => {});
 
     // Generate JWT token and return user data
     const payload = {
@@ -59,8 +71,6 @@ router.post("/signup", async (req, res) => {
       role: user.role,
       phone: user.phone,
       college: user.college,
-      department: user.department,
-      year: user.year,
     };
     const token = generateToken(payload);
     return res.status(201).json({ ...payload, token });
@@ -80,11 +90,7 @@ router.post("/login", async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    if (!user.password) {
-      return res.status(401).json({ error: "This account uses Google sign-in. Please use Google to log in." });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const isMatch = await user.comparePassword(password);
@@ -106,8 +112,6 @@ router.post("/login", async (req, res) => {
       role: user.role,
       phone: user.phone,
       college: user.college,
-      department: user.department,
-      year: user.year,
     };
     const token = generateToken(payload);
     return res.json({ ...payload, token });
@@ -118,23 +122,60 @@ router.post("/login", async (req, res) => {
 
 // ── GET CURRENT USER ──────────────────────────────────────
 router.get("/me", isAuthenticated, (req, res) => {
-  const { _id, name, email, avatar, pid, role, phone, college, department, year } =
-    req.user;
-  res.json({ _id, name, email, avatar, pid, role, phone, college, department, year });
+  const { _id, name, email, avatar, pid, role, phone, college } = req.user;
+  res.json({ _id, name, email, avatar, pid, role, phone, college });
 });
 
 // ── UPDATE PROFILE ────────────────────────────────────────
 router.put("/profile", isAuthenticated, async (req, res) => {
   try {
-    const { phone, college, department, year, name } = req.body;
-    const updateFields = { phone, college, department, year };
-    if (name && name.trim()) updateFields.name = name.trim();
+    const { phone, college, name } = req.body;
+    const updateFields = {};
+    
+    // Name validation - text only, min 2 characters
+    if (name !== undefined) {
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: "Name is required" });
+      }
+      if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
+        return res.status(400).json({ error: "Name can only contain letters and spaces" });
+      }
+      if (name.trim().length < 2) {
+        return res.status(400).json({ error: "Name must be at least 2 characters long" });
+      }
+      updateFields.name = name.trim();
+    }
+    
+    // Phone validation - exactly 10 digits only (now required)
+    if (phone !== undefined) {
+      if (!phone || !phone.trim()) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+      if (!/^[0-9]{10}$/.test(phone.trim())) {
+        return res.status(400).json({ error: "Phone number must be exactly 10 digits" });
+      }
+      updateFields.phone = phone.trim();
+    }
+    
+    // College validation - text only, min 2 characters
+    if (college !== undefined) {
+      if (!college || !college.trim()) {
+        return res.status(400).json({ error: "College is required" });
+      }
+      if (!/^[a-zA-Z\s&]+$/.test(college.trim())) {
+        return res.status(400).json({ error: "College name can only contain letters, spaces, and & symbol" });
+      }
+      if (college.trim().length < 2) {
+        return res.status(400).json({ error: "College name must be at least 2 characters long" });
+      }
+      updateFields.college = college.trim();
+    }
     
     const updated = await User.findByIdAndUpdate(
       req.user._id,
       updateFields,
       { new: true, runValidators: true }
-    ).select("-__v -googleId -password");
+    ).select("-__v -password");
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
