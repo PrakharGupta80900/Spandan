@@ -103,9 +103,6 @@ export default function Login() {
                   {showPwd ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                 </button>
               </div>
-              {form.password && !pwdValid && (
-                <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><FiAlertCircle size={12} /> Must be at least 6 characters</p>
-              )}
             </div>
 
             <button type="submit" disabled={submitting || (form.email && !emailValid) || (form.password && !pwdValid)} className="btn-primary w-full">
