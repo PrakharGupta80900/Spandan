@@ -15,22 +15,22 @@ function HoverCard({ children, user }) {
     >
       {children}
       {show && user && (
-        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 pointer-events-none animate-fade-in">
+        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-[#F8F3E1] border border-[#41431B]/30 rounded-xl shadow-2xl p-4 pointer-events-none animate-fade-in">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[#AEB784] flex items-center justify-center !text-black text-sm font-bold shrink-0">
               {user.name?.[0]?.toUpperCase() || "?"}
             </div>
             <div className="min-w-0">
-              <p className="text-white font-semibold text-sm truncate">{user.name}</p>
-              {user.pid && <p className="text-purple-400 text-xs font-mono">{user.pid}</p>}
+              <p className="text-[#41431B] font-semibold text-sm truncate">{user.name}</p>
+              {user.pid && <p className="text-[#41431B] text-xs font-mono">{user.pid}</p>}
             </div>
           </div>
-          <div className="space-y-1.5 text-xs text-gray-400">
-            <p className="flex items-center gap-1.5"><FiMail size={11} className="text-gray-500 shrink-0" /> {user.email}</p>
-            {user.phone && <p className="flex items-center gap-1.5"><FiPhone size={11} className="text-gray-500 shrink-0" /> {user.phone}</p>}
-            {user.college && <p className="flex items-center gap-1.5"><FiBookOpen size={11} className="text-gray-500 shrink-0" /> {user.college}</p>}
+          <div className="space-y-1.5 text-xs text-[#41431B]/80">
+            <p className="flex items-center gap-1.5"><FiMail size={11} className="text-[#41431B]/70 shrink-0" /> {user.email}</p>
+            {user.phone && <p className="flex items-center gap-1.5"><FiPhone size={11} className="text-[#41431B]/70 shrink-0" /> {user.phone}</p>}
+            {user.college && <p className="flex items-center gap-1.5"><FiBookOpen size={11} className="text-[#41431B]/70 shrink-0" /> {user.college}</p>}
           </div>
-          <div className="absolute left-6 -bottom-1.5 w-3 h-3 bg-gray-900 border-r border-b border-gray-700 rotate-45" />
+          <div className="absolute left-6 -bottom-1.5 w-3 h-3 bg-[#F8F3E1] border-r border-b border-[#41431B]/30 rotate-45" />
         </div>
       )}
     </span>
@@ -130,14 +130,14 @@ export default function EventRegistrations() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/admin/events" className="text-gray-400 hover:text-white">
+        <Link to="/admin/events" className="text-[#41431B]/80 hover:text-[#41431B]">
           <FiArrowLeft size={18} />
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">Registrations</h1>
-          <p className="text-gray-400 text-sm">
+          <h1 className="text-2xl font-bold text-[#41431B]">Registrations</h1>
+          <p className="text-[#41431B]/80 text-sm">
             {eventName}
-            {isGroup && <span className="ml-2 badge bg-lime-900/60 text-lime-300 text-[10px]">Group</span>}
+            {isGroup && <span className="ml-2 badge bg-[#AEB784] !text-black border border-[#41431B]/30 text-[10px]">Group</span>}
           </p>
         </div>
         <button onClick={exportCSV} className="btn-secondary flex items-center gap-2 text-sm">
@@ -151,20 +151,20 @@ export default function EventRegistrations() {
         </div>
       ) : registrations.length === 0 ? (
         <div className="card p-12 text-center">
-          <FiUsers size={40} className="mx-auto text-gray-600 mb-3" />
-          <p className="text-gray-400">No registrations yet.</p>
+          <FiUsers size={40} className="mx-auto text-[#41431B]/70 mb-3" />
+          <p className="text-[#41431B]/80">No registrations yet.</p>
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-            <p className="text-sm text-gray-400">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#41431B]/20">
+            <p className="text-sm text-[#41431B]/80">
               {registrations.length} {isGroup ? "teams" : "participants"}
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800 bg-gray-900/50">
+                <tr className="border-b border-[#41431B]/20 bg-[#E3DBBB]">
                   {[
                     ...(isGroup ? ["TID", "Team Name"] : []),
                     "PID", "Name",
@@ -172,52 +172,52 @@ export default function EventRegistrations() {
                     "Registered",
                     "Actions",
                   ].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">
+                    <th key={h} className="px-4 py-3 text-left text-xs text-[#41431B]/70 uppercase tracking-wider font-medium">
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800/50">
+              <tbody className="divide-y divide-[#41431B]/15">
                 {registrations.map((reg) => (
-                  <tr key={reg._id} className="hover:bg-gray-900/50 transition">
+                  <tr key={reg._id} className="hover:bg-[#E3DBBB] transition">
                     {isGroup && (
                       <>
-                        <td className="px-4 py-3 text-lime-400 font-mono text-xs font-bold whitespace-nowrap">{reg.tid || "—"}</td>
-                        <td className="px-4 py-3 text-lime-300 font-medium whitespace-nowrap">{reg.teamName || "—"}</td>
+                        <td className="px-4 py-3 text-[#41431B] font-mono text-xs font-bold whitespace-nowrap">{reg.tid || "-"}</td>
+                        <td className="px-4 py-3 text-[#41431B] font-medium whitespace-nowrap">{reg.teamName || "-"}</td>
                       </>
                     )}
                     <td className="px-4 py-3 whitespace-nowrap">
                       <HoverCard user={reg.user}>
-                        <span className="text-primary-300 font-mono text-xs cursor-default hover:text-purple-300 transition">{reg.pid}</span>
+                        <span className="text-[#41431B] font-mono text-xs cursor-default hover:text-black transition">{reg.pid}</span>
                       </HoverCard>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <HoverCard user={reg.user}>
-                        <span className="text-white font-medium cursor-default hover:text-purple-300 transition">{reg.user?.name}</span>
+                        <span className="text-[#41431B] font-medium cursor-default hover:text-black transition">{reg.user?.name}</span>
                       </HoverCard>
                     </td>
                     {isGroup ? (
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {(reg.teamMembers || []).map((m) => (
-                            <span key={m.pid} className="badge bg-gray-800 text-gray-300 text-[10px]">
-                              {m.name || m.pid} <span className="text-gray-500 font-mono ml-0.5">{m.pid}</span>
+                            <span key={m.pid} className="badge bg-[#E3DBBB] border border-[#41431B]/30 !text-black text-[10px]">
+                              {m.name || m.pid} <span className="text-[#41431B]/70 font-mono ml-0.5">{m.pid}</span>
                             </span>
                           ))}
                         </div>
                       </td>
                     ) : (
-                      <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{reg.user?.email}</td>
+                      <td className="px-4 py-3 text-[#41431B]/80 whitespace-nowrap">{reg.user?.email}</td>
                     )}
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap text-xs">
+                    <td className="px-4 py-3 text-[#41431B]/70 whitespace-nowrap text-xs">
                       {new Date(reg.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap space-x-2">
                       {isGroup && (
                         <button
                           onClick={() => handleEditTeam(reg)}
-                          className="text-gray-400 hover:text-white transition disabled:opacity-50"
+                          className="text-[#41431B]/80 hover:text-[#41431B] transition disabled:opacity-50"
                           disabled={!!editingId}
                           title="Edit team name"
                         >
@@ -226,7 +226,7 @@ export default function EventRegistrations() {
                       )}
                       <button
                         onClick={() => handleDelete(reg._id)}
-                        className="text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                        className="text-red-600 hover:text-red-700 transition disabled:opacity-50"
                         disabled={!!deletingId}
                         title="Delete registration"
                       >
@@ -243,3 +243,4 @@ export default function EventRegistrations() {
     </div>
   );
 }
+

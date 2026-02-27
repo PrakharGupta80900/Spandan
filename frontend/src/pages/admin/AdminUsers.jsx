@@ -64,8 +64,8 @@ export default function AdminUsers() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/admin" className="text-gray-400 hover:text-white"><FiArrowLeft size={18} /></Link>
-        <h1 className="text-2xl font-bold text-white flex-1">All Participants</h1>
+        <Link to="/admin" className="text-[#41431B]/80 hover:text-[#41431B]"><FiArrowLeft size={18} /></Link>
+        <h1 className="text-2xl font-bold text-[#41431B] flex-1">All Participants</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => fetchUsers()}
@@ -82,7 +82,7 @@ export default function AdminUsers() {
       </div>
 
       <div className="mb-4 relative">
-        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#41431B]/70" />
         <input value={search} onChange={(e) => setSearch(e.target.value)} className="input pl-9 max-w-xs" placeholder="Search by name, email, PID..." />
       </div>
 
@@ -90,51 +90,51 @@ export default function AdminUsers() {
         <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="card h-14 animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
         <div className="card p-12 text-center">
-          <FiUsers size={40} className="mx-auto text-gray-600 mb-3" />
-          <p className="text-gray-400">No users found.</p>
+          <FiUsers size={40} className="mx-auto text-[#41431B]/70 mb-3" />
+          <p className="text-[#41431B]/80">No users found.</p>
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-800">
-            <p className="text-sm text-gray-400">{filtered.length} participants</p>
+          <div className="px-4 py-3 border-b border-[#41431B]/20">
+            <p className="text-sm text-[#41431B]/80">{filtered.length} participants</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800 bg-gray-900/50">
+                <tr className="border-b border-[#41431B]/20 bg-[#E3DBBB]">
                           {["PID", "Name", "Email", "Phone", "College", "Joined", "Actions"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs text-[#41431B]/70 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800/50">
+              <tbody className="divide-y divide-[#41431B]/15">
                 {filtered.map((u) => (
-                  <tr key={u._id} className="hover:bg-gray-900/50">
+                  <tr key={u._id} className="hover:bg-[#E3DBBB]">
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-primary-300 bg-primary-900/40 px-2 py-0.5 rounded">{u.pid}</span>
+                      <span className="font-mono text-xs !text-black bg-[#E3DBBB] border border-[#41431B]/30 px-2 py-0.5 rounded">{u.pid}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {u.avatar ? (
                           <img src={u.avatar} className="w-7 h-7 rounded-full object-cover" alt={u.name} />
                         ) : (
-                          <div className="w-7 h-7 bg-primary-700 rounded-full text-xs font-bold flex items-center justify-center text-white">
+                          <div className="w-7 h-7 bg-[#AEB784] rounded-full text-xs font-bold flex items-center justify-center !text-black">
                             {u.name?.[0]?.toUpperCase()}
                           </div>
                         )}
-                        <span className="font-medium text-white whitespace-nowrap">{u.name}</span>
+                        <span className="font-medium text-[#41431B] whitespace-nowrap">{u.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{u.email}</td>
-                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{u.phone || "-"}</td>
-                    <td className="px-4 py-3 text-gray-400 max-w-[160px] truncate">{u.college || "-"}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                    <td className="px-4 py-3 text-[#41431B]/80 whitespace-nowrap">{u.email}</td>
+                    <td className="px-4 py-3 text-[#41431B]/80 whitespace-nowrap">{u.phone || "-"}</td>
+                    <td className="px-4 py-3 text-[#41431B]/80 max-w-[160px] truncate">{u.college || "-"}</td>
+                    <td className="px-4 py-3 text-[#41431B]/70 text-xs whitespace-nowrap">
                       {new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => handleDelete(u)}
-                        className="text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                        className="text-red-600 hover:text-red-700 transition disabled:opacity-50"
                         disabled={!!deletingId}
                         title="Delete user"
                       >
@@ -151,4 +151,5 @@ export default function AdminUsers() {
     </div>
   );
 }
+
 

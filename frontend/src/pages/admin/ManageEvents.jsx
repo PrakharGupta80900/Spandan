@@ -8,12 +8,12 @@ import {
 } from "react-icons/fi";
 
 const CATEGORY_COLORS = {
-  Dance: "bg-pink-900/60 text-pink-300",
-  Music: "bg-blue-900/60 text-blue-300",
-  "Fine Arts": "bg-lime-900/60 text-lime-300",
-  Literary: "bg-yellow-900/60 text-yellow-300",
-  Dramatics: "bg-red-900/60 text-red-300",
-  Other: "bg-gray-800 text-gray-300",
+  Dance: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
+  Music: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
+  "Fine Arts": "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
+  Literary: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
+  Dramatics: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
+  Other: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
 };
 
 export default function ManageEvents() {
@@ -64,10 +64,10 @@ export default function ManageEvents() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/admin" className="text-gray-400 hover:text-white transition">
+        <Link to="/admin" className="text-[#41431B]/80 hover:text-[#41431B] transition">
           <FiArrowLeft size={18} />
         </Link>
-        <h1 className="text-2xl font-bold text-white flex-1">Manage Events</h1>
+        <h1 className="text-2xl font-bold text-[#41431B] flex-1">Manage Events</h1>
         <button
           onClick={fetchEvents}
           disabled={refreshing}
@@ -87,8 +87,8 @@ export default function ManageEvents() {
         </div>
       ) : events.length === 0 ? (
         <div className="card p-12 text-center">
-          <FiCalendar size={40} className="mx-auto text-gray-600 mb-3" />
-          <p className="text-gray-400 mb-4">No events yet.</p>
+          <FiCalendar size={40} className="mx-auto text-[#41431B]/70 mb-3" />
+          <p className="text-[#41431B]/80 mb-4">No events yet.</p>
           <Link to="/admin/events/new" className="btn-primary inline-block">Create First Event</Link>
         </div>
       ) : (
@@ -98,21 +98,21 @@ export default function ManageEvents() {
               {event.image?.url ? (
                 <img src={event.image.url} alt={event.title} className="w-16 h-12 object-cover rounded-lg shrink-0" />
               ) : (
-                <div className="w-16 h-12 bg-gray-800 rounded-lg shrink-0 flex items-center justify-center">
-                  <FiCalendar className="text-gray-600" />
+                <div className="w-16 h-12 bg-[#E3DBBB] border border-[#41431B]/30 rounded-lg shrink-0 flex items-center justify-center">
+                  <FiCalendar className="text-[#41431B]/70" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-white truncate">{event.title}</h3>
+                  <h3 className="font-semibold text-[#41431B] truncate">{event.title}</h3>
                   <span className={`badge ${CATEGORY_COLORS[event.category] || CATEGORY_COLORS.Other}`}>
                     {event.category}
                   </span>
-                  <span className={`badge ${event.isListed ? "bg-green-900/60 text-green-300" : "bg-red-900/60 text-red-300"}`}>
+                  <span className={`badge ${event.isListed ? "bg-[#AEB784] !text-black border border-[#41431B]/30" : "bg-[#E3DBBB] text-red-700 border border-red-700/40"}`}>
                     {event.isListed ? "Listed" : "Unlisted"}
                   </span>
                 </div>
-                <div className="flex gap-4 text-xs text-gray-400 mt-1">
+                <div className="flex gap-4 text-xs text-[#41431B]/80 mt-1">
                   <span className="flex items-center gap-1">
                     <FiCalendar size={11} />
                     {new Date(event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
@@ -126,28 +126,28 @@ export default function ManageEvents() {
               <div className="flex items-center gap-1 shrink-0">
                 <Link
                   to={`/admin/events/${event._id}/registrations`}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition"
+                  className="p-2 text-[#41431B]/80 hover:text-[#41431B] hover:bg-[#E3DBBB] border border-[#41431B]/30 rounded-lg transition"
                   title="View registrations"
                 >
                   <FiUsers size={15} />
                 </Link>
                 <Link
                   to={`/admin/events/${event._id}/edit`}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition"
+                  className="p-2 text-[#41431B]/80 hover:text-[#41431B] hover:bg-[#E3DBBB] border border-[#41431B]/30 rounded-lg transition"
                   title="Edit"
                 >
                   <FiEdit2 size={15} />
                 </Link>
                 <button
                   onClick={() => handleToggle(event._id)}
-                  className={`p-2 rounded-lg transition ${event.isListed ? "text-green-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-800 hover:text-green-400"}`}
+                  className={`p-2 rounded-lg transition ${event.isListed ? "text-[#41431B] hover:bg-[#E3DBBB] border border-[#41431B]/30" : "text-[#41431B]/70 hover:bg-[#E3DBBB] border border-[#41431B]/30 hover:text-[#41431B]"}`}
                   title={event.isListed ? "Unlist" : "List"}
                 >
                   {event.isListed ? <FiEye size={15} /> : <FiEyeOff size={15} />}
                 </button>
                 <button
                   onClick={() => handleDelete(event._id)}
-                  className="p-2 text-gray-500 hover:text-red-400 hover:bg-gray-800 rounded-lg transition"
+                  className="p-2 text-[#41431B]/70 hover:text-red-700 hover:bg-[#E3DBBB] border border-[#41431B]/30 rounded-lg transition"
                   title="Delete"
                 >
                   <FiTrash2 size={15} />
@@ -160,3 +160,4 @@ export default function ManageEvents() {
     </div>
   );
 }
+
