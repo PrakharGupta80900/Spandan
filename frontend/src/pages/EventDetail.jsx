@@ -39,7 +39,7 @@ export default function EventDetail() {
         if (user) {
           // Check registration
           const regs = await API.get("/registrations/my/all");
-          setRegistered(regs.data.some((r) => r.event._id === id));
+          setRegistered(regs.data.some((r) => String(r?.event?._id) === id));
         }
       } catch (err) {
         toast.error(err.response?.data?.error || "Event not found");
