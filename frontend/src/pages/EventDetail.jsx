@@ -31,6 +31,18 @@ export default function EventDetail() {
   const [teamMembers, setTeamMembers] = useState([]);
   const [checkingPid, setCheckingPid] = useState(false);
 
+  const normalizePid = (value) => {
+    const cleaned = String(value || "").toUpperCase().replace(/\s+/g, "");
+    if (!cleaned) return "";
+    const rawDigits = cleaned.startsWith("PID") ? cleaned.slice(3) : cleaned;
+    if (/^\d+$/.test(rawDigits)) {
+      const withCollegePrefix = rawDigits.startsWith("26") ? rawDigits : `26${rawDigits}`;
+      return `PID${withCollegePrefix}`;
+    }
+    if (cleaned.startsWith("PID")) return cleaned;
+    return cleaned;
+  };
+
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -52,7 +64,7 @@ export default function EventDetail() {
   }, [id, user]);
 
   const addTeamMember = async () => {
-    const pid = pidInput.trim().toUpperCase();
+    const pid = normalizePid(pidInput);
     if (!pid) return;
     if (checkingPid) return;
     if (pid === user?.pid) return toast.error("You're already the team leader");
@@ -242,8 +254,9 @@ export default function EventDetail() {
                       <div className="flex gap-2">
                         <input
                           value={pidInput}
-                          onChange={(e) => setPidInput(e.target.value)}
+                          onChange={(e) => setPidInput(normalizePid(e.target.value))}
                           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTeamMember())}
+                          onBlur={() => setPidInput((prev) => normalizePid(prev))}
                           placeholder="e.g. PID260002"
                           className="input flex-1 font-mono text-sm"
                         />

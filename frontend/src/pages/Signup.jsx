@@ -4,7 +4,16 @@ import { useAuth } from "../context/AuthContext";
 import { FiMail, FiLock, FiUser, FiPhone, FiEye, FiEyeOff, FiAlertCircle, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
 
-const COLLEGES = ["SRMS CET&R", "SRMS NURSING", "CET", "SRMS IMS", "SRMS IPS"];
+const COLLEGES = [
+  "SRMS CET&R",
+  "SRMS NURSING",
+  "CET",
+  "SRMS IMS",
+  "SRMS IPS",
+  "SRMS IBS",
+  "SRMS UNNAO",
+  "Others",
+];
 
 export default function Signup() {
   const { user, signup } = useAuth();
