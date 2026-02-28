@@ -115,7 +115,7 @@ router.post("/:eventId", isAuthenticated, async (req, res) => {
       $inc: { registeredCount: 1 },
     });
 
-    await registration.populate("event", "title date venue category image");
+    await registration.populate("event", "title date time venue category image");
 
     res.status(201).json(registration);
   } catch (err) {
@@ -178,3 +178,4 @@ router.delete("/:eventId", isAuthenticated, async (req, res) => {
 });
 
 module.exports = router;
+

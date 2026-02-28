@@ -50,6 +50,9 @@ export default function EventCard({ event }) {
         <h3 className="font-bold text-white text-lg leading-snug mb-2 group-hover:text-primary-300 transition line-clamp-2">
           {event.title}
         </h3>
+        {event.participationType === "group" && event.theme && (
+          <p className="text-[#E3DBBB] text-xs mb-2 line-clamp-1">Theme: {event.theme}</p>
+        )}
         <p className="text-gray-400 text-sm line-clamp-2 mb-4">{event.description}</p>
 
         <div className="space-y-1.5 text-sm text-gray-400">

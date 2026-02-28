@@ -144,9 +144,17 @@ export default function EventDetail() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
-      <Link to="/" className="flex items-center gap-2 text-[#41431B]/80 hover:text-[#41431B] transition mb-6 text-sm">
-        <FiArrowLeft /> Back to Events
-      </Link>
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <Link to="/events" className="flex items-center gap-2 text-[#41431B]/80 hover:text-[#41431B] transition text-sm">
+          <FiArrowLeft /> Back to Events
+        </Link>
+        {event.participationType === "group" && event.theme && (
+          <div className="bg-[#E3DBBB] border border-[#41431B]/30 rounded-lg px-3 py-1.5 text-right">
+            <p className="text-[10px] uppercase tracking-wide text-[#41431B]/70">Event Theme</p>
+            <p className="text-[#41431B] font-semibold text-sm">{event.theme}</p>
+          </div>
+        )}
+      </div>
 
       {/* Hero Image */}
       {event.image?.url && (
@@ -182,7 +190,6 @@ export default function EventDetail() {
             <h2 className="text-lg font-semibold text-[#41431B] mb-2">About this Event</h2>
             <p className="text-[#41431B]/90 leading-relaxed whitespace-pre-line">{event.description}</p>
           </div>
-
         </div>
 
         {/* Registration Sidebar */}

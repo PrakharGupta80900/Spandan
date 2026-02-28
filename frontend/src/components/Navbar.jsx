@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
-  FiMenu, FiX, FiUser, FiLogOut, FiSettings,
+  FiMenu, FiX, FiLogOut, FiSettings,
   FiHome, FiCalendar, FiGrid, FiCode,
 } from "react-icons/fi";
 import toast from "react-hot-toast";

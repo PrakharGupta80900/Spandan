@@ -11,6 +11,11 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    theme: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     category: {
       type: String,
       required: true,

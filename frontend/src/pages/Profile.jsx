@@ -7,12 +7,19 @@ import { FiSave, FiUser } from "react-icons/fi";
 export default function Profile() {
   const { user, refreshUser } = useAuth();
   const [form, setForm] = useState({
-    phone: user?.phone || "",
+    rollNumber: user?.rollNumber || "",
     college: user?.college || "",
   });
   const [saving, setSaving] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "rollNumber") {
+      setForm({ ...form, rollNumber: value.replace(/\D/g, "") });
+      return;
+    }
+    setForm({ ...form, [name]: value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,13 +65,15 @@ export default function Profile() {
         <h2 className="font-semibold text-[#41431B]">Additional Information</h2>
 
         <div>
-          <label className="block text-sm text-[#41431B] mb-1.5">Phone Number</label>
+          <label className="block text-sm text-[#41431B] mb-1.5">Roll Number</label>
           <input
-            type="tel"
-            name="phone"
-            value={form.phone}
+            type="text"
+            name="rollNumber"
+            value={form.rollNumber}
             onChange={handleChange}
-            placeholder="+91 98765 43210"
+            placeholder="e.g. 230104"
+            inputMode="numeric"
+            pattern="[0-9]*"
             className="input"
           />
         </div>

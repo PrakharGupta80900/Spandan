@@ -8,10 +8,10 @@ const { generateToken } = require("../utils/jwt");
 // ── LOCAL SIGNUP ───────────────────────────────────────────
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, phone, college } = req.body;
+    const { name, email, password, rollNumber, college } = req.body;
 
-    if (!name || !email || !password || !phone || !college) {
-      return res.status(400).json({ error: "All fields are required: name, email, password, phone, and college" });
+    if (!name || !email || !password || !rollNumber || !college) {
+      return res.status(400).json({ error: "All fields are required: name, email, password, roll number, and college" });
     }
     
     // Name validation - text only, min 2 characters
@@ -22,9 +22,9 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "Name must be at least 2 characters long" });
     }
     
-    // Phone validation - exactly 10 digits only (now required)
-    if (!/^[0-9]{10}$/.test(phone.trim())) {
-      return res.status(400).json({ error: "Phone number must be exactly 10 digits" });
+    // Roll number validation
+    if (!/^[0-9]{1,30}$/.test(rollNumber.trim())) {
+      return res.status(400).json({ error: "Roll number must contain only digits" });
     }
     
     // College validation - text only, min 2 characters
@@ -44,6 +44,10 @@ router.post("/signup", async (req, res) => {
     if (existing) {
       return res.status(400).json({ error: "An account with this email already exists" });
     }
+    const existingRoll = await User.findOne({ rollNumber: rollNumber.trim() });
+    if (existingRoll) {
+      return res.status(400).json({ error: "An account with this roll number already exists" });
+    }
 
     // Check if this email is admin
     const adminEmails = (process.env.ADMIN_EMAIL || "").split(",").map(e => e.trim().toLowerCase());
@@ -54,7 +58,7 @@ router.post("/signup", async (req, res) => {
       name: name.trim(),
       email: email.toLowerCase().trim(),
       password,
-      phone: phone.trim(),
+      rollNumber: rollNumber.trim(),
       college: college.trim(),
       pid,
       role: isAdmin ? "admin" : "user",
@@ -69,7 +73,7 @@ router.post("/signup", async (req, res) => {
       avatar: user.avatar,
       pid: user.pid,
       role: user.role,
-      phone: user.phone,
+      rollNumber: user.rollNumber,
       college: user.college,
     };
     const token = generateToken(payload);
@@ -110,7 +114,7 @@ router.post("/login", async (req, res) => {
       avatar: user.avatar,
       pid: user.pid,
       role: user.role,
-      phone: user.phone,
+      rollNumber: user.rollNumber,
       college: user.college,
     };
     const token = generateToken(payload);
@@ -122,14 +126,14 @@ router.post("/login", async (req, res) => {
 
 // ── GET CURRENT USER ──────────────────────────────────────
 router.get("/me", isAuthenticated, (req, res) => {
-  const { _id, name, email, avatar, pid, role, phone, college } = req.user;
-  res.json({ _id, name, email, avatar, pid, role, phone, college });
+  const { _id, name, email, avatar, pid, role, rollNumber, college } = req.user;
+  res.json({ _id, name, email, avatar, pid, role, rollNumber, college });
 });
 
 // ── UPDATE PROFILE ────────────────────────────────────────
 router.put("/profile", isAuthenticated, async (req, res) => {
   try {
-    const { phone, college, name } = req.body;
+    const { rollNumber, college, name } = req.body;
     const updateFields = {};
     
     // Name validation - text only, min 2 characters
@@ -146,15 +150,23 @@ router.put("/profile", isAuthenticated, async (req, res) => {
       updateFields.name = name.trim();
     }
     
-    // Phone validation - exactly 10 digits only (now required)
-    if (phone !== undefined) {
-      if (!phone || !phone.trim()) {
-        return res.status(400).json({ error: "Phone number is required" });
+    // Roll number validation
+    if (rollNumber !== undefined) {
+      if (!rollNumber || !rollNumber.trim()) {
+        return res.status(400).json({ error: "Roll number is required" });
       }
-      if (!/^[0-9]{10}$/.test(phone.trim())) {
-        return res.status(400).json({ error: "Phone number must be exactly 10 digits" });
+      if (!/^[0-9]{1,30}$/.test(rollNumber.trim())) {
+        return res.status(400).json({ error: "Roll number must contain only digits" });
       }
-      updateFields.phone = phone.trim();
+      const normalizedRoll = rollNumber.trim();
+      const duplicateRoll = await User.findOne({
+        rollNumber: normalizedRoll,
+        _id: { $ne: req.user._id },
+      }).select("_id");
+      if (duplicateRoll) {
+        return res.status(400).json({ error: "An account with this roll number already exists" });
+      }
+      updateFields.rollNumber = normalizedRoll;
     }
     
     // College validation - text only, min 2 characters
@@ -178,6 +190,15 @@ router.put("/profile", isAuthenticated, async (req, res) => {
     ).select("-__v -password");
     res.json(updated);
   } catch (err) {
+    if (err?.code === 11000) {
+      if (err?.keyPattern?.email) {
+        return res.status(400).json({ error: "An account with this email already exists" });
+      }
+      if (err?.keyPattern?.rollNumber) {
+        return res.status(400).json({ error: "An account with this roll number already exists" });
+      }
+      return res.status(400).json({ error: "Duplicate value provided" });
+    }
     res.status(400).json({ error: err.message });
   }
 });

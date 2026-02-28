@@ -36,14 +36,16 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
-    phone: {
+    rollNumber: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
       validate: {
         validator: function(v) {
-          return /^[0-9]{10}$/.test(v.trim());
+          return /^[0-9]{1,30}$/.test(v.trim());
         },
-        message: "Phone number must be exactly 10 digits"
+        message: "Roll number must contain only digits"
       }
     },
     college: {
@@ -93,12 +95,10 @@ userSchema.pre("deleteOne", { document: true, query: false }, async function() {
     const registrations = await Registration.find({ user: this._id }).populate("event");
     const eventCounts = {};
     
-    // Calculate actual spot counts for each event
+    // Each registration consumes exactly 1 slot in current event count semantics.
     registrations.forEach(reg => {
       if (reg.event) {
-        const spotsUsed = reg.event.participationType === "group" 
-          ? (reg.teamMembers ? reg.teamMembers.length + 1 : 1)  // +1 for the registrant
-          : 1;  // Solo events = 1 spot
+        const spotsUsed = 1;
         eventCounts[reg.event._id] = (eventCounts[reg.event._id] || 0) + spotsUsed;
       }
     });
@@ -125,12 +125,10 @@ userSchema.pre("deleteMany", { document: false, query: true }, async function() 
     const registrations = await Registration.find({ user: { $in: userIds } }).populate("event");
     const eventCounts = {};
     
-    // Calculate actual spot counts for each event
+    // Each registration consumes exactly 1 slot in current event count semantics.
     registrations.forEach(reg => {
       if (reg.event) {
-        const spotsUsed = reg.event.participationType === "group" 
-          ? (reg.teamMembers ? reg.teamMembers.length + 1 : 1)  // +1 for the registrant
-          : 1;  // Solo events = 1 spot
+        const spotsUsed = 1;
         eventCounts[reg.event._id] = (eventCounts[reg.event._id] || 0) + spotsUsed;
       }
     });

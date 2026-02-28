@@ -10,7 +10,7 @@ const INITIAL_FORM = {
   title: "", description: "", category: "Dance",
   date: "", time: "", venue: "",
   maxParticipants: "",
-  participationType: "solo", teamSizeMin: "2", teamSizeMax: "4",
+  participationType: "solo", theme: "", teamSizeMin: "2", teamSizeMax: "4",
 };
 
 export default function EventForm() {
@@ -38,6 +38,7 @@ export default function EventForm() {
             venue: event.venue,
             maxParticipants: String(event.maxParticipants),
             participationType: event.participationType || "solo",
+            theme: event.theme || "",
             teamSizeMin: String(event.teamSize?.min || 2),
             teamSizeMax: String(event.teamSize?.max || 4),
           });
@@ -170,7 +171,18 @@ export default function EventForm() {
           </div>
 
           {form.participationType === "group" && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-[#41431B] mb-1.5">Event Theme (Optional)</label>
+                <input
+                  name="theme"
+                  value={form.theme}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="e.g. Sustainability / Street Style / Retro"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-[#41431B] mb-1.5">Min Team Size</label>
                 <input name="teamSizeMin" type="number" min="2" value={form.teamSizeMin} onChange={handleChange} className="input" />
@@ -179,6 +191,7 @@ export default function EventForm() {
                 <label className="block text-sm text-[#41431B] mb-1.5">Max Team Size</label>
                 <input name="teamSizeMax" type="number" min="2" value={form.teamSizeMax} onChange={handleChange} className="input" />
               </div>
+            </div>
             </div>
           )}
         </div>

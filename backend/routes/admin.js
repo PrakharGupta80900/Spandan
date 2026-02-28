@@ -95,8 +95,47 @@ router.get("/users", isAdmin, async (req, res) => {
     const users = await User.find({ role: "user" })
       .select("-password -__v")
       .sort({ createdAt: -1 });
+    const userIds = users.map((u) => u._id);
+    const registrations = await Registration.find({
+      user: { $in: userIds },
+      status: { $ne: "cancelled" },
+    })
+      .populate("event", "title date time venue")
+      .select("user event status teamName teamMembers pid tid createdAt")
+      .sort({ createdAt: -1 });
+
+    const registrationsByUser = registrations.reduce((acc, reg) => {
+      const key = String(reg.user);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push({
+        _id: reg._id,
+        status: reg.status,
+        pid: reg.pid || "",
+        teamName: reg.teamName || "",
+        teamMembers: Array.isArray(reg.teamMembers) ? reg.teamMembers : [],
+        tid: reg.tid || "",
+        createdAt: reg.createdAt,
+        event: reg.event
+          ? {
+              _id: reg.event._id,
+              title: reg.event.title,
+              date: reg.event.date,
+              time: reg.event.time,
+              venue: reg.event.venue,
+            }
+          : null,
+      });
+      return acc;
+    }, {});
+
+    const enrichedUsers = users.map((u) => {
+      const user = u.toObject();
+      user.registrations = registrationsByUser[String(u._id)] || [];
+      return user;
+    });
+
     res.set("Cache-Control", "no-store");
-    res.json(users);
+    res.json(enrichedUsers);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -150,11 +189,12 @@ router.get("/events", isAdmin, async (req, res) => {
 // ── CREATE EVENT ───────────────────────────────────────────
 router.post("/events", isAdmin, upload.single("image"), async (req, res) => {
   try {
-    const { title, description, category, date, time, venue, maxParticipants, participationType, teamSize } = req.body;
+    const { title, description, theme, category, date, time, venue, maxParticipants, participationType, teamSize } = req.body;
 
     const eventData = {
       title,
       description,
+      theme: participationType === "group" ? String(theme || "").trim() : "",
       category,
       date: new Date(date),
       time,
@@ -198,17 +238,21 @@ router.put("/events/:id", isAdmin, upload.single("image"), async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    const { title, description, category, date, time, venue, maxParticipants, participationType, teamSize } = req.body;
+    const { title, description, theme, category, date, time, venue, maxParticipants, participationType, teamSize } = req.body;
+    const nextParticipationType = participationType || event.participationType || "solo";
 
     const updateData = {
       title,
       description,
+      theme: nextParticipationType === "group"
+        ? (theme !== undefined ? String(theme).trim() : event.theme || "")
+        : "",
       category,
       date: date ? new Date(date) : event.date,
       time,
       venue,
       maxParticipants: maxParticipants ? parseInt(maxParticipants) : event.maxParticipants,
-      participationType: participationType || event.participationType || "solo",
+      participationType: nextParticipationType,
     };
 
     if ((participationType || event.participationType) === "group" && teamSize) {
@@ -281,7 +325,7 @@ router.delete("/events/:id", isAdmin, async (req, res) => {
 router.get("/events/:id/registrations", isAdmin, async (req, res) => {
   try {
     const registrations = await Registration.find({ event: req.params.id })
-      .populate("user", "name email pid phone college role")
+      .populate("user", "name email pid rollNumber college role")
       .sort({ createdAt: -1 });
     // Exclude admin registrations from the list
     const filtered = registrations.filter((r) => r.user?.role !== "admin");

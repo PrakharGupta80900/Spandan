@@ -121,6 +121,9 @@ export default function ManageEvents() {
                     <FiUsers size={11} />
                     {event.registeredCount}/{event.maxParticipants}
                   </span>
+                  {event.participationType === "group" && event.theme && (
+                    <span className="truncate">Theme: {event.theme}</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">

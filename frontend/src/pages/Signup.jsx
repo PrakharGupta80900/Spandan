@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FiMail, FiLock, FiUser, FiPhone, FiEye, FiEyeOff, FiAlertCircle, FiCheck } from "react-icons/fi";
+import { FiMail, FiLock, FiUser, FiHash, FiEye, FiEyeOff, FiAlertCircle, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const COLLEGES = [
@@ -26,7 +26,7 @@ export default function Signup() {
     email: "",
     password: "",
     confirmPassword: "",
-    phone: "",
+    rollNumber: "",
     college: "",
   });
 
@@ -34,7 +34,14 @@ export default function Signup() {
     if (user) navigate("/dashboard", { replace: true });
   }, [user, navigate]);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "rollNumber") {
+      setForm({ ...form, rollNumber: value.replace(/\D/g, "") });
+      return;
+    }
+    setForm({ ...form, [name]: value });
+  };
 
   // Validation helpers
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -42,15 +49,15 @@ export default function Signup() {
   const pwdHasLength = form.password.length >= 8;
   const pwdHasUpper = /[A-Z]/.test(form.password);
   const pwdHasNumber = /\d/.test(form.password);
-  const pwdHasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password);
+  const pwdHasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(form.password);
   const pwdAllValid = pwdHasLength && pwdHasUpper && pwdHasNumber && pwdHasSpecial;
   const pwdMatch = form.password === form.confirmPassword;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.password) {
-      return toast.error("Name, email and password are required");
+    if (!form.name || !form.email || !form.password || !form.rollNumber || !form.college) {
+      return toast.error("Name, email, password, roll number, and college are required");
     }
     if (!emailRegex.test(form.email)) {
       return toast.error("Enter a valid email address");
@@ -64,7 +71,7 @@ export default function Signup() {
 
     setSubmitting(true);
     try {
-      const { confirmPassword, ...signupData } = form;
+      const { confirmPassword: _confirmPassword, ...signupData } = form;
       await signup(signupData);
       toast.success("Account created! Welcome to Spandan 2026");
       navigate("/dashboard", { replace: true });
@@ -181,18 +188,21 @@ className={`input pl-10 ${form.confirmPassword && !pwdMatch ? 'ring-2 ring-red-5
               </div>
             </div>
 
-            {/* Phone */}
+            {/* Roll Number */}
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Phone Number</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Roll Number</label>
               <div className="relative">
-                <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                 <input
-                  type="tel"
-                  name="phone"
-                  value={form.phone}
+                  type="text"
+                  name="rollNumber"
+                  value={form.rollNumber}
                   onChange={handleChange}
-                  placeholder="+91 98765 43210"
+                  placeholder="e.g. 230104"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className="input pl-10"
+                  required
                 />
               </div>
             </div>
@@ -200,7 +210,7 @@ className={`input pl-10 ${form.confirmPassword && !pwdMatch ? 'ring-2 ring-red-5
             {/* College */}
             <div>
               <label className="block text-sm text-gray-400 mb-1.5">College / Institution</label>
-              <select name="college" value={form.college} onChange={handleChange} className="input">
+              <select name="college" value={form.college} onChange={handleChange} className="input" required>
                 <option value="">Select College</option>
                 {COLLEGES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -208,7 +218,7 @@ className={`input pl-10 ${form.confirmPassword && !pwdMatch ? 'ring-2 ring-red-5
               </select>
             </div>
 
-            <button type="submit" disabled={submitting || (form.email && !emailValid) || (form.password && !pwdAllValid) || (form.confirmPassword && !pwdMatch)} className="btn-primary w-full mt-2">
+            <button type="submit" disabled={submitting || !form.rollNumber || !form.college || (form.email && !emailValid) || (form.password && !pwdAllValid) || (form.confirmPassword && !pwdMatch)} className="btn-primary w-full mt-2">
               {submitting ? "Creating Account..." : "Create Account"}
             </button>
           </form>

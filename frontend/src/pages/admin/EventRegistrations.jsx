@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import API from "../../api/axios";
-import { FiArrowLeft, FiDownload, FiUsers, FiMail, FiPhone, FiBookOpen, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiArrowLeft, FiDownload, FiUsers, FiMail, FiHash, FiBookOpen, FiTrash2, FiEdit2 } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 function HoverCard({ children, user }) {
@@ -27,7 +27,7 @@ function HoverCard({ children, user }) {
           </div>
           <div className="space-y-1.5 text-xs text-[#41431B]/80">
             <p className="flex items-center gap-1.5"><FiMail size={11} className="text-[#41431B]/70 shrink-0" /> {user.email}</p>
-            {user.phone && <p className="flex items-center gap-1.5"><FiPhone size={11} className="text-[#41431B]/70 shrink-0" /> {user.phone}</p>}
+            {user.rollNumber && <p className="flex items-center gap-1.5"><FiHash size={11} className="text-[#41431B]/70 shrink-0" /> {user.rollNumber}</p>}
             {user.college && <p className="flex items-center gap-1.5"><FiBookOpen size={11} className="text-[#41431B]/70 shrink-0" /> {user.college}</p>}
           </div>
           <div className="absolute left-6 -bottom-1.5 w-3 h-3 bg-[#F8F3E1] border-r border-b border-[#41431B]/30 rotate-45" />
