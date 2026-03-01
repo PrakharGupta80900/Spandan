@@ -59,7 +59,7 @@ const eventSchema = new mongoose.Schema(
     },
     participationType: {
       type: String,
-      enum: ["Solo", "Group"],
+      enum: ["solo", "group"],
       default: "solo",
     },
     teamSize: {

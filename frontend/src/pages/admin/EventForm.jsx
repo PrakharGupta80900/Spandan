@@ -136,8 +136,8 @@ export default function EventForm() {
                 onChange={handleChange}
                 className="input"
               >
-                <option value="solo">Solo</option>
-                <option value="group">Group / Team</option>
+                <option value="solo">solo</option>
+                <option value="group">group / Team</option>
               </select>
             </div>
             <div>

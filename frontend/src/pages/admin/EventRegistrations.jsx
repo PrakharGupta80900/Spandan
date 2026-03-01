@@ -57,14 +57,14 @@ export default function EventRegistrations() {
     }).finally(() => setLoading(false));
   }, [id]);
 
-  const isGroup = eventData?.participationType === "group";
+  const isgroup = eventData?.participationType === "group";
 
   const exportCSV = () => {
-    const headers = isGroup
+    const headers = isgroup
       ? ["TID", "Team Name", "PID", "Name", "College"]
       : ["PID", "Name", "College"];
     const rows = registrations.map((r) => {
-      if (isGroup) {
+      if (isgroup) {
         return [
           r.tid || "",
           r.teamName || "",
@@ -137,7 +137,7 @@ export default function EventRegistrations() {
           <h1 className="text-2xl font-bold text-[#41431B]">Registrations</h1>
           <p className="text-[#41431B]/80 text-sm">
             {eventName}
-            {isGroup && <span className="ml-2 badge bg-[#AEB784] !text-black border border-[#41431B]/30 text-[10px]">Group</span>}
+            {isgroup && <span className="ml-2 badge bg-[#AEB784] !text-black border border-[#41431B]/30 text-[10px]">group</span>}
           </p>
         </div>
         <button onClick={exportCSV} className="btn-secondary flex items-center gap-2 text-sm">
@@ -158,7 +158,7 @@ export default function EventRegistrations() {
         <div className="card overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#41431B]/20">
             <p className="text-sm text-[#41431B]/80">
-              {registrations.length} {isGroup ? "teams" : "participants"}
+              {registrations.length} {isgroup ? "teams" : "participants"}
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -166,9 +166,9 @@ export default function EventRegistrations() {
               <thead>
                 <tr className="border-b border-[#41431B]/20 bg-[#E3DBBB]">
                   {[
-                    ...(isGroup ? ["TID", "Team Name"] : []),
+                    ...(isgroup ? ["TID", "Team Name"] : []),
                     "PID", "Name",
-                    ...(isGroup ? ["Team Members"] : ["Email"]),
+                    ...(isgroup ? ["Team Members"] : ["Email"]),
                     "Registered",
                     "Actions",
                   ].map((h) => (
@@ -181,7 +181,7 @@ export default function EventRegistrations() {
               <tbody className="divide-y divide-[#41431B]/15">
                 {registrations.map((reg) => (
                   <tr key={reg._id} className="hover:bg-[#E3DBBB] transition">
-                    {isGroup && (
+                    {isgroup && (
                       <>
                         <td className="px-4 py-3 text-[#41431B] font-mono text-xs font-bold whitespace-nowrap">{reg.tid || "-"}</td>
                         <td className="px-4 py-3 text-[#41431B] font-medium whitespace-nowrap">{reg.teamName || "-"}</td>
@@ -197,7 +197,7 @@ export default function EventRegistrations() {
                         <span className="text-[#41431B] font-medium cursor-default hover:text-black transition">{reg.user?.name}</span>
                       </HoverCard>
                     </td>
-                    {isGroup ? (
+                    {isgroup ? (
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {(reg.teamMembers || []).map((m) => (
@@ -214,7 +214,7 @@ export default function EventRegistrations() {
                       {new Date(reg.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap space-x-2">
-                      {isGroup && (
+                      {isgroup && (
                         <button
                           onClick={() => handleEditTeam(reg)}
                           className="text-[#41431B]/80 hover:text-[#41431B] transition disabled:opacity-50"

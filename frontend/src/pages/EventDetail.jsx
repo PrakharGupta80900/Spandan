@@ -97,14 +97,14 @@ export default function EventDetail() {
       return;
     }
 
-    const isGroup = event.participationType === "group";
+    const isgroup = event.participationType === "group";
 
-    if (isGroup && !showTeamForm) {
+    if (isgroup && !showTeamForm) {
       setShowTeamForm(true);
       return;
     }
 
-    if (isGroup) {
+    if (isgroup) {
       if (!teamName.trim()) return toast.error("Enter a team name");
       const totalSize = teamMembers.length + 1;
       if (totalSize < (event.teamSize?.min || 2)) {
@@ -117,7 +117,7 @@ export default function EventDetail() {
 
     setRegistering(true);
     try {
-      const body = isGroup ? { teamName: teamName.trim(), teamMembers } : {};
+      const body = isgroup ? { teamName: teamName.trim(), teamMembers } : {};
       const { data } = await API.post(`/registrations/${id}`, body);
       setRegistered(true);
       setShowTeamForm(false);
