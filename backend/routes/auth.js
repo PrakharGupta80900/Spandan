@@ -1,15 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto");
 const { isAuthenticated } = require("../middleware/auth");
 const User = require("../models/User");
-const Otp = require("../models/Otp");
 const { generatePID } = require("../config/passport");
 const { generateToken } = require("../utils/jwt");
-const { sendWelcomeEmail, sendOtpEmail } = require("../utils/email");
+const { sendWelcomeEmail } = require("../utils/email");
 
-// ── STEP 1: SEND OTP (validate + send code, nothing stored except email+otp) ──
-router.post("/signup/send-otp", async (req, res) => {
+// ── SIGNUP ────────────────────────────────────────────────
+router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, rollNumber, college } = req.body;
 
@@ -42,74 +40,13 @@ router.post("/signup/send-otp", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
-    // Check if email already exists
-    const existing = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existing) {
-      return res.status(400).json({ error: "An account with this email already exists" });
-    }
-    const existingRoll = await User.findOne({ rollNumber: rollNumber.trim() });
-    if (existingRoll) {
-      return res.status(400).json({ error: "An account with this roll number already exists" });
-    }
-
-    // Generate 6-digit OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
-
-    // Only store email + otp — no user data in DB until verified
-    await Otp.deleteMany({ email: email.toLowerCase().trim() });
-    await Otp.create({ email: email.toLowerCase().trim(), otp });
-
-    // Send OTP email
-    await sendOtpEmail({ name: name.trim(), email: email.toLowerCase().trim(), otp });
-
-    return res.json({ message: "OTP sent to your email" });
-  } catch (err) {
-    console.error("[send-otp]", err);
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ── STEP 2: VERIFY OTP & CREATE ACCOUNT ────────────────────
-// Frontend resends all form data along with the OTP — nothing was stored in DB
-router.post("/signup/verify-otp", async (req, res) => {
-  try {
-    const { name, email, password, rollNumber, college, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({ error: "Email and OTP are required" });
-    }
-    if (!name || !password || !rollNumber || !college) {
-      return res.status(400).json({ error: "All signup fields are required" });
-    }
-
-    const otpDoc = await Otp.findOne({ email: email.toLowerCase().trim() });
-    if (!otpDoc) {
-      return res.status(400).json({ error: "OTP expired or not found. Please request a new one." });
-    }
-
-    // Max 5 attempts
-    if (otpDoc.attempts >= 5) {
-      await Otp.deleteOne({ _id: otpDoc._id });
-      return res.status(400).json({ error: "Too many failed attempts. Please request a new OTP." });
-    }
-
-    if (otpDoc.otp !== otp.trim()) {
-      otpDoc.attempts += 1;
-      await otpDoc.save();
-      return res.status(400).json({ error: "Invalid OTP. Please try again." });
-    }
-
-    // OTP is valid — now create the user
-
-    // Re-check uniqueness (in case someone registered between send and verify)
+    // Check for duplicates
     const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingEmail) {
-      await Otp.deleteOne({ _id: otpDoc._id });
       return res.status(400).json({ error: "An account with this email already exists" });
     }
     const existingRoll = await User.findOne({ rollNumber: rollNumber.trim() });
     if (existingRoll) {
-      await Otp.deleteOne({ _id: otpDoc._id });
       return res.status(400).json({ error: "An account with this roll number already exists" });
     }
 
@@ -129,10 +66,6 @@ router.post("/signup/verify-otp", async (req, res) => {
       isVerified: true,
     });
 
-    // Delete OTP doc
-    await Otp.deleteOne({ _id: otpDoc._id });
-
-    // Generate JWT token and return user data
     const payload = {
       _id: user._id,
       name: user.name,
@@ -150,7 +83,11 @@ router.post("/signup/verify-otp", async (req, res) => {
 
     return res.status(201).json({ ...payload, token });
   } catch (err) {
-    console.error("[verify-otp]", err);
+    if (err?.code === 11000) {
+      if (err?.keyPattern?.email) return res.status(400).json({ error: "An account with this email already exists" });
+      if (err?.keyPattern?.rollNumber) return res.status(400).json({ error: "An account with this roll number already exists" });
+    }
+    console.error("[signup]", err);
     res.status(400).json({ error: err.message });
   }
 });

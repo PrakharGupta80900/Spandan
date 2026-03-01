@@ -56,7 +56,7 @@ router.post("/email-summary", isAuthenticated, async (req, res) => {
       .populate("event", "title date venue")
       .sort({ createdAt: -1 });
 
-    await sendRegistrationsPdfEmail({
+    const emailResult = await sendRegistrationsPdfEmail({
       name: req.user.name,
       email: req.user.email,
       pid: req.user.pid,
@@ -64,6 +64,10 @@ router.post("/email-summary", isAuthenticated, async (req, res) => {
       college: req.user.college,
       registrations: registrations.map((r) => r.toObject()),
     });
+
+    if (!emailResult.success) {
+      return res.status(503).json({ error: "Email service is temporarily unavailable. Please try again later." });
+    }
 
     emailCooldowns.set(userId, Date.now());
     res.json({ message: "Registration summary emailed successfully" });

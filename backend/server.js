@@ -7,8 +7,12 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 
 process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection", err?.message || err);
-  process.exit(1);
+  // Log but do NOT exit — email/third-party failures must not kill the server
+  console.error("Unhandled Rejection (non-fatal)", err?.message || err);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception (non-fatal)", err?.message || err);
 });
 
 const app = express();
