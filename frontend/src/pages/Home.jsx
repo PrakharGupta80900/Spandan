@@ -7,11 +7,12 @@ const imageModules = import.meta.glob("../../img/*.{png,jpg,jpeg,webp,JPG,JPEG,P
   import: "default",
 });
 
-// Sort numerically so 1.png comes before 2.JPG, 10.JPG, etc.
+// Only include numbered images (e.g. 1.png, 2.JPG), skip non-numbered ones like dev.jpg
 const slideshowImages = Object.entries(imageModules)
+  .filter(([path]) => /\/\d+\./.test(path))
   .sort(([a], [b]) => {
-    const numA = parseInt(a.match(/\/(\d+)\./)?.[1]) || 0;
-    const numB = parseInt(b.match(/\/(\d+)\./)?.[1]) || 0;
+    const numA = parseInt(a.match(/\/(\d+)\./)[1]);
+    const numB = parseInt(b.match(/\/(\d+)\./)[1]);
     return numA - numB;
   })
   .map(([, src]) => src);
