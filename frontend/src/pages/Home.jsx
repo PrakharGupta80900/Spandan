@@ -1,18 +1,20 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-import img1 from "../../img/1.png";
-import img2 from "../../img/2.JPG";
-import img3 from "../../img/3.JPG";
-import img4 from "../../img/4.JPG";
-import img5 from "../../img/5.JPG";
-import img6 from "../../img/6.JPG";
-import img7 from "../../img/7.JPG";
-import img8 from "../../img/8.JPG";
-import img9 from "../../img/9.JPG";
-import img10 from "../../img/10.JPG";
+// Auto-import all images (.png, .jpg, .jpeg, .webp) from the img folder
+const imageModules = import.meta.glob("../../img/*.{png,jpg,jpeg,webp,JPG,JPEG,PNG}", {
+  eager: true,
+  import: "default",
+});
 
-const slideshowImages = [img1, img2, img3, img4, img5, img6, img7, img8, img9, img10];
+// Sort numerically so 1.png comes before 2.JPG, 10.JPG, etc.
+const slideshowImages = Object.entries(imageModules)
+  .sort(([a], [b]) => {
+    const numA = parseInt(a.match(/\/(\d+)\./)?.[1]) || 0;
+    const numB = parseInt(b.match(/\/(\d+)\./)?.[1]) || 0;
+    return numA - numB;
+  })
+  .map(([, src]) => src);
 
 export default function Home() {
   const heroWord = "UTSARGA";
