@@ -25,7 +25,7 @@ const eventSchema = new mongoose.Schema(
         "Fine Arts",
         "Literary",
         "Dramatics",
-        "Informals"
+        "Informal"
       ],
     },
     date: {
