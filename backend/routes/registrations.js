@@ -31,9 +31,20 @@ router.get("/pid/:pid/exists", isAuthenticated, async (req, res) => {
   }
 });
 
+// Rate-limit: one summary email per user every 10 minutes
+const emailCooldowns = new Map();
+const EMAIL_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+
 // Email registration summary to the logged-in user
 router.post("/email-summary", isAuthenticated, async (req, res) => {
   try {
+    const userId = req.user._id.toString();
+    const lastSent = emailCooldowns.get(userId);
+    if (lastSent && Date.now() - lastSent < EMAIL_COOLDOWN_MS) {
+      const minsLeft = Math.ceil((EMAIL_COOLDOWN_MS - (Date.now() - lastSent)) / 60000);
+      return res.status(429).json({ error: `You can request another summary email in ${minsLeft} minute${minsLeft > 1 ? "s" : ""}` });
+    }
+
     const { sendRegistrationsPdfEmail } = require("../utils/email");
     const registrations = await Registration.find({
       $or: [
@@ -54,6 +65,7 @@ router.post("/email-summary", isAuthenticated, async (req, res) => {
       registrations: registrations.map((r) => r.toObject()),
     });
 
+    emailCooldowns.set(userId, Date.now());
     res.json({ message: "Registration summary emailed successfully" });
   } catch (err) {
     res.status(500).json({ error: "Failed to send email" });
