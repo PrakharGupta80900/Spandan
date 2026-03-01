@@ -13,6 +13,7 @@ const CATEGORY_COLORS = {
   "Fine Arts": "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
   Literary: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
   Dramatics: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
+  Informal: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
   Other: "bg-[#E3DBBB] !text-black border border-[#41431B]/30",
 };
 

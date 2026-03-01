@@ -25,6 +25,7 @@ const eventSchema = new mongoose.Schema(
         "Fine Arts",
         "Literary",
         "Dramatics",
+        "Informals"
       ],
     },
     date: {
@@ -58,7 +59,7 @@ const eventSchema = new mongoose.Schema(
     },
     participationType: {
       type: String,
-      enum: ["solo", "group"],
+      enum: ["Solo", "Group"],
       default: "solo",
     },
     teamSize: {

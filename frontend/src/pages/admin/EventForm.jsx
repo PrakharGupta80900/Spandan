@@ -4,7 +4,7 @@ import API from "../../api/axios";
 import toast from "react-hot-toast";
 import { FiArrowLeft, FiUpload } from "react-icons/fi";
 
-const CATEGORIES = ["Dance", "Music", "Fine Arts", "Literary", "Dramatics"];
+const CATEGORIES = ["Dance", "Music", "Fine Arts", "Literary", "Dramatics", "Informal"];
 
 const INITIAL_FORM = {
   title: "", description: "", category: "Dance",

@@ -3,7 +3,7 @@ import API from "../api/axios";
 import EventCard from "../components/EventCard";
 import { FiSearch, FiFilter } from "react-icons/fi";
 
-const CATEGORIES = ["All", "Dance", "Music", "Fine Arts", "Literary", "Dramatics"];
+const CATEGORIES = ["All", "Dance", "Music", "Fine Arts", "Literary", "Dramatics", "Informal"];
 
 export default function Events() {
   const [events, setEvents] = useState([]);
