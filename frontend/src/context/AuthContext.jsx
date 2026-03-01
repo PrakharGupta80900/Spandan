@@ -46,8 +46,13 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const signup = async (formData) => {
-    const { data } = await API.post("/auth/signup", formData);
+  const sendSignupOtp = async (formData) => {
+    const { data } = await API.post("/auth/signup/send-otp", formData);
+    return data;
+  };
+
+  const verifySignupOtp = async (formData, otp) => {
+    const { data } = await API.post("/auth/signup/verify-otp", { ...formData, otp });
     localStorage.setItem('token', data.token);
     API.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setUser(data);
@@ -70,7 +75,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, signup, logout, refreshUser }}
+      value={{ user, loading, login, sendSignupOtp, verifySignupOtp, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

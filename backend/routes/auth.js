@@ -1,41 +1,43 @@
 const express = require("express");
 const router = express.Router();
+const crypto = require("crypto");
 const { isAuthenticated } = require("../middleware/auth");
 const User = require("../models/User");
+const Otp = require("../models/Otp");
 const { generatePID } = require("../config/passport");
 const { generateToken } = require("../utils/jwt");
-const { sendWelcomeEmail } = require("../utils/email");
+const { sendWelcomeEmail, sendOtpEmail } = require("../utils/email");
 
-// ── LOCAL SIGNUP ───────────────────────────────────────────
-router.post("/signup", async (req, res) => {
+// ── STEP 1: SEND OTP (validate + send code, nothing stored except email+otp) ──
+router.post("/signup/send-otp", async (req, res) => {
   try {
     const { name, email, password, rollNumber, college } = req.body;
 
     if (!name || !email || !password || !rollNumber || !college) {
       return res.status(400).json({ error: "All fields are required: name, email, password, roll number, and college" });
     }
-    
-    // Name validation - text only, min 2 characters
+
+    // Name validation
     if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
       return res.status(400).json({ error: "Name can only contain letters and spaces" });
     }
     if (name.trim().length < 2) {
       return res.status(400).json({ error: "Name must be at least 2 characters long" });
     }
-    
+
     // Roll number validation
     if (!/^[0-9]{1,30}$/.test(rollNumber.trim())) {
       return res.status(400).json({ error: "Roll number must contain only digits" });
     }
-    
-    // College validation - text only, min 2 characters
+
+    // College validation
     if (!/^[a-zA-Z\s&]+$/.test(college.trim())) {
       return res.status(400).json({ error: "College name can only contain letters, spaces, and & symbol" });
     }
     if (college.trim().length < 2) {
       return res.status(400).json({ error: "College name must be at least 2 characters long" });
     }
-    
+
     if (password.length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
@@ -47,6 +49,67 @@ router.post("/signup", async (req, res) => {
     }
     const existingRoll = await User.findOne({ rollNumber: rollNumber.trim() });
     if (existingRoll) {
+      return res.status(400).json({ error: "An account with this roll number already exists" });
+    }
+
+    // Generate 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    // Only store email + otp — no user data in DB until verified
+    await Otp.deleteMany({ email: email.toLowerCase().trim() });
+    await Otp.create({ email: email.toLowerCase().trim(), otp });
+
+    // Send OTP email
+    await sendOtpEmail({ name: name.trim(), email: email.toLowerCase().trim(), otp });
+
+    return res.json({ message: "OTP sent to your email" });
+  } catch (err) {
+    console.error("[send-otp]", err);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── STEP 2: VERIFY OTP & CREATE ACCOUNT ────────────────────
+// Frontend resends all form data along with the OTP — nothing was stored in DB
+router.post("/signup/verify-otp", async (req, res) => {
+  try {
+    const { name, email, password, rollNumber, college, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: "Email and OTP are required" });
+    }
+    if (!name || !password || !rollNumber || !college) {
+      return res.status(400).json({ error: "All signup fields are required" });
+    }
+
+    const otpDoc = await Otp.findOne({ email: email.toLowerCase().trim() });
+    if (!otpDoc) {
+      return res.status(400).json({ error: "OTP expired or not found. Please request a new one." });
+    }
+
+    // Max 5 attempts
+    if (otpDoc.attempts >= 5) {
+      await Otp.deleteOne({ _id: otpDoc._id });
+      return res.status(400).json({ error: "Too many failed attempts. Please request a new OTP." });
+    }
+
+    if (otpDoc.otp !== otp.trim()) {
+      otpDoc.attempts += 1;
+      await otpDoc.save();
+      return res.status(400).json({ error: "Invalid OTP. Please try again." });
+    }
+
+    // OTP is valid — now create the user
+
+    // Re-check uniqueness (in case someone registered between send and verify)
+    const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingEmail) {
+      await Otp.deleteOne({ _id: otpDoc._id });
+      return res.status(400).json({ error: "An account with this email already exists" });
+    }
+    const existingRoll = await User.findOne({ rollNumber: rollNumber.trim() });
+    if (existingRoll) {
+      await Otp.deleteOne({ _id: otpDoc._id });
       return res.status(400).json({ error: "An account with this roll number already exists" });
     }
 
@@ -66,6 +129,9 @@ router.post("/signup", async (req, res) => {
       isVerified: true,
     });
 
+    // Delete OTP doc
+    await Otp.deleteOne({ _id: otpDoc._id });
+
     // Generate JWT token and return user data
     const payload = {
       _id: user._id,
@@ -84,6 +150,7 @@ router.post("/signup", async (req, res) => {
 
     return res.status(201).json({ ...payload, token });
   } catch (err) {
+    console.error("[verify-otp]", err);
     res.status(400).json({ error: err.message });
   }
 });

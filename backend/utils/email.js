@@ -184,4 +184,68 @@ async function sendRegistrationsPdfEmail({ name, email, pid, rollNumber, college
   }
 }
 
-module.exports = { sendWelcomeEmail, sendRegistrationsPdfEmail };
+/**
+ * Send OTP verification email for signup.
+ */
+async function sendOtpEmail({ name, email, otp }) {
+  try {
+    await client.transactionalEmails.sendTransacEmail({
+      sender: {
+        name: process.env.BREVO_SENDER_NAME || "Spandan 2026",
+        email: process.env.BREVO_SENDER_MAIL || "noreply@srmscetrevents.in",
+      },
+      to: [{ email, name }],
+      subject: `${otp} is your Spandan 2026 verification code`,
+      htmlContent: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { margin:0; padding:0; background:#F8F3E1; font-family: 'Segoe UI', Arial, sans-serif; }
+    .container { max-width:600px; margin:30px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(65,67,27,0.12); }
+    .header { background: linear-gradient(135deg, #41431B, #5a5d26); padding:32px 24px; text-align:center; color:#F8F3E1; }
+    .header h1 { margin:0; font-size:28px; color:#F8F3E1; }
+    .header p  { margin:8px 0 0; font-size:14px; color:#E3DBBB; }
+    .body { padding:32px 24px; color:#41431B; line-height:1.7; }
+    .body h2 { margin-top:0; color:#41431B; }
+    .otp-box { background:#F8F3E1; border:2px dashed #AEB784; border-radius:12px; padding:24px; text-align:center; margin:24px 0; }
+    .otp-box .label { font-size:12px; text-transform:uppercase; color:#41431B; margin-bottom:8px; opacity:0.7; letter-spacing:1px; }
+    .otp-box .otp   { font-size:36px; font-weight:700; color:#41431B; letter-spacing:8px; font-family:monospace; }
+    .footer { text-align:center; padding:20px 24px; font-size:12px; color:#41431B; background:#E3DBBB; }
+    .footer a { color:#41431B; text-decoration:none; font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Spandan 2026</h1>
+      <p>Email Verification</p>
+    </div>
+    <div class="body">
+      <h2>Hey ${name}! 👋</h2>
+      <p>Use the verification code below to complete your signup:</p>
+      <div class="otp-box">
+        <div class="label">Your Verification Code</div>
+        <div class="otp">${otp}</div>
+      </div>
+      <p>This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+      <p>If you didn't request this, you can safely ignore this email.</p>
+    </div>
+    <div class="footer">
+      &copy; 2026 Spandan &mdash; SRMS CET&R. All rights reserved.<br/>
+      <a href="https://srmscetrevents.in">srmscetrevents.in</a>
+    </div>
+  </div>
+</body>
+</html>`,
+    });
+    console.log(`[Brevo] OTP email sent to ${email}`);
+  } catch (err) {
+    console.error("[Brevo] Failed to send OTP email:", err?.body || err.message);
+    throw err;
+  }
+}
+
+module.exports = { sendWelcomeEmail, sendRegistrationsPdfEmail, sendOtpEmail };
