@@ -203,6 +203,9 @@ export default function Dashboard() {
 
       const today = new Date().toISOString().slice(0, 10);
       doc.save(`spandan-registrations-${user?.pid || "user"}-${today}.pdf`);
+
+      // Fire-and-forget: also email the summary
+      API.post("/registrations/email-summary").catch(() => {});
     } catch {
       toast.error("Failed to export PDF");
     }

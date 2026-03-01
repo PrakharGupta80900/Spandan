@@ -4,6 +4,7 @@ const { isAuthenticated } = require("../middleware/auth");
 const User = require("../models/User");
 const { generatePID } = require("../config/passport");
 const { generateToken } = require("../utils/jwt");
+const { sendWelcomeEmail } = require("../utils/email");
 
 // ── LOCAL SIGNUP ───────────────────────────────────────────
 router.post("/signup", async (req, res) => {
@@ -77,6 +78,10 @@ router.post("/signup", async (req, res) => {
       college: user.college,
     };
     const token = generateToken(payload);
+
+    // Fire-and-forget welcome email
+    sendWelcomeEmail({ name: user.name, email: user.email, pid: user.pid });
+
     return res.status(201).json({ ...payload, token });
   } catch (err) {
     res.status(400).json({ error: err.message });

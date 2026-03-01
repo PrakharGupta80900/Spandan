@@ -31,6 +31,35 @@ router.get("/pid/:pid/exists", isAuthenticated, async (req, res) => {
   }
 });
 
+// Email registration summary to the logged-in user
+router.post("/email-summary", isAuthenticated, async (req, res) => {
+  try {
+    const { sendRegistrationsPdfEmail } = require("../utils/email");
+    const registrations = await Registration.find({
+      $or: [
+        { user: req.user._id },
+        { "teamMembers.pid": req.user.pid },
+      ],
+      status: { $ne: "cancelled" },
+    })
+      .populate("event", "title date venue")
+      .sort({ createdAt: -1 });
+
+    await sendRegistrationsPdfEmail({
+      name: req.user.name,
+      email: req.user.email,
+      pid: req.user.pid,
+      rollNumber: req.user.rollNumber,
+      college: req.user.college,
+      registrations: registrations.map((r) => r.toObject()),
+    });
+
+    res.json({ message: "Registration summary emailed successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to send email" });
+  }
+});
+
 // Register for an event
 router.post("/:eventId", isAuthenticated, async (req, res) => {
   try {
