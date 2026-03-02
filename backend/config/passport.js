@@ -1,19 +1,22 @@
-// Generate PID in format PID260001
+const mongoose = require("mongoose");
+
+// Atomic counter document schema – one doc per year key e.g. "pid26"
+const counterSchema = new mongoose.Schema(
+  { _id: String, seq: { type: Number, default: 0 } },
+  { collection: "pid_counters" }
+);
+const Counter = mongoose.models.PidCounter || mongoose.model("PidCounter", counterSchema);
+
+// Generate PID atomically – no race conditions, single DB round-trip
 async function generatePID() {
-  const User = require("../models/User");
   const year = new Date().getFullYear().toString().slice(-2);
-  const prefix = `PID${year}`;
-  const lastUser = await User.findOne(
-    { pid: { $regex: `^${prefix}` } },
-    { pid: 1 },
-    { sort: { pid: -1 } }
+  const key = `pid${year}`;
+  const counter = await Counter.findOneAndUpdate(
+    { _id: key },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
   );
-  let nextNum = 1;
-  if (lastUser && lastUser.pid) {
-    const lastNum = parseInt(lastUser.pid.slice(prefix.length), 10);
-    if (!isNaN(lastNum)) nextNum = lastNum + 1;
-  }
-  return `${prefix}${String(nextNum).padStart(4, "0")}`;
+  return `PID${year}${String(counter.seq).padStart(4, "0")}`;
 }
 
 module.exports = { generatePID };

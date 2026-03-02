@@ -40,21 +40,22 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
-    // Check for duplicates
-    const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingEmail) {
-      return res.status(400).json({ error: "An account with this email already exists" });
-    }
-    const existingRoll = await User.findOne({ rollNumber: rollNumber.trim() });
-    if (existingRoll) {
-      return res.status(400).json({ error: "An account with this roll number already exists" });
-    }
-
-    // Check if this email is admin
+    // Check for duplicates in parallel + generate PID atomically – single round-trip batch
     const adminEmails = (process.env.ADMIN_EMAIL || "").split(",").map(e => e.trim().toLowerCase());
     const isAdmin = adminEmails.includes(email.toLowerCase().trim());
 
-    const pid = await generatePID();
+    const [existingEmail, existingRoll, pid] = await Promise.all([
+      User.findOne({ email: email.toLowerCase().trim() }, { _id: 1 }).lean(),
+      User.findOne({ rollNumber: rollNumber.trim() }, { _id: 1 }).lean(),
+      generatePID(),
+    ]);
+
+    if (existingEmail) {
+      return res.status(409).json({ error: "An account with this email already exists" });
+    }
+    if (existingRoll) {
+      return res.status(409).json({ error: "An account with this roll number already exists" });
+    }
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
