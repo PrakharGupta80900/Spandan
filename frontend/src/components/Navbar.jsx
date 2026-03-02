@@ -146,21 +146,24 @@ export default function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div
-          className="md:hidden border-t border-gray-800 px-4 py-4 space-y-3"
-          style={{ backgroundColor: isHome ? "#000000" : "#41431B" }}
+          className="md:hidden border-t px-4 py-4 space-y-3"
+          style={{
+            backgroundColor: isHome ? "#000000" : "#E3DBBB",
+            borderColor: isHome ? "#374151" : "rgba(65,67,27,0.3)"
+          }}
         >
-          <Link to="/" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Home</Link>
-          <Link to="/events" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Events</Link>
-          <Link to="/rulebook" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Rulebook</Link>
-          <Link to="/developer" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Developer</Link>
+          <Link to="/" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>Home</Link>
+          <Link to="/events" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>Events</Link>
+          <Link to="/rulebook" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>Rulebook</Link>
+          <Link to="/developer" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>Developer</Link>
           {user?.role === "admin" && (
-            <Link to="/admin" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Admin Panel</Link>
+            <Link to="/admin" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>Admin Panel</Link>
           )}
           {user ? (
             <>
-              <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">My Registrations</Link>
-              <Link to="/profile" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Profile</Link>
-              <button onClick={handleLogout} className="block text-red-400 py-2">Logout</button>
+              <Link to="/dashboard" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>My Registrations</Link>
+              <Link to="/profile" onClick={() => setMenuOpen(false)} className={`block py-2 ${isHome ? "text-gray-300 hover:text-white" : "!text-black hover:text-[#41431B]"}`}>Profile</Link>
+              <button onClick={handleLogout} className={`block py-2 ${isHome ? "text-red-400" : "text-red-700"}`}>Logout</button>
             </>
           ) : (
             <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-primary block text-center">Get Started</Link>

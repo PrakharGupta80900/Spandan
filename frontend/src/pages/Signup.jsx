@@ -64,7 +64,8 @@ export default function Signup() {
       toast.success("Account created! Welcome to Spandan 2026");
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.error || "Signup failed");
+      const msg = err.response?.data?.error || err.response?.data?.message || "Signup failed. Please try again.";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

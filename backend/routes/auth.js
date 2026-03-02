@@ -84,8 +84,10 @@ router.post("/signup", async (req, res) => {
     return res.status(201).json({ ...payload, token });
   } catch (err) {
     if (err?.code === 11000) {
-      if (err?.keyPattern?.email) return res.status(400).json({ error: "An account with this email already exists" });
-      if (err?.keyPattern?.rollNumber) return res.status(400).json({ error: "An account with this roll number already exists" });
+      if (err?.keyPattern?.email) return res.status(409).json({ error: "An account with this email already exists" });
+      if (err?.keyPattern?.rollNumber) return res.status(409).json({ error: "An account with this roll number already exists" });
+      if (err?.keyPattern?.pid) return res.status(409).json({ error: "A registration conflict occurred. Please try login" });
+      return res.status(409).json({ error: "An account with these details already exists" });
     }
     console.error("[signup]", err);
     res.status(400).json({ error: err.message });
