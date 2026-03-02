@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   FiMenu, FiX, FiLogOut, FiSettings,
-  FiHome, FiCalendar, FiGrid, FiCode,
+  FiHome, FiCalendar, FiGrid, FiCode, FiBookOpen,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 
@@ -56,6 +56,9 @@ export default function Navbar() {
             </Link>
             <Link to="/events" className="text-gray-400 hover:text-white transition flex items-center gap-1.5 text-sm">
               <FiCalendar size={15} /> Events
+            </Link>
+            <Link to="/rulebook" className="text-gray-400 hover:text-white transition flex items-center gap-1.5 text-sm">
+              <FiBookOpen size={15} /> Rulebook
             </Link>
             <Link to="/developer" className="text-gray-400 hover:text-white transition flex items-center gap-1.5 text-sm">
               <FiCode size={15} /> Developer
@@ -148,6 +151,7 @@ export default function Navbar() {
         >
           <Link to="/" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Home</Link>
           <Link to="/events" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Events</Link>
+          <Link to="/rulebook" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Rulebook</Link>
           <Link to="/developer" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Developer</Link>
           {user?.role === "admin" && (
             <Link to="/admin" onClick={() => setMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Admin Panel</Link>

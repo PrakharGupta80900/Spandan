@@ -10,7 +10,7 @@ const INITIAL_FORM = {
   title: "", description: "", category: "Dance",
   date: "", time: "", venue: "",
   maxParticipants: "",
-  participationType: "solo", theme: "", teamSizeMin: "2", teamSizeMax: "4",
+  participationType: "solo", theme: "", teamSizeMin: "1", teamSizeMax: "4",
 };
 
 export default function EventForm() {
@@ -39,7 +39,7 @@ export default function EventForm() {
             maxParticipants: String(event.maxParticipants),
             participationType: event.participationType || "solo",
             theme: event.theme || "",
-            teamSizeMin: String(event.teamSize?.min || 2),
+            teamSizeMin: String(event.teamSize?.min || 1),
             teamSizeMax: String(event.teamSize?.max || 4),
           });
           if (event.image?.url) setImagePreview(event.image.url);
@@ -66,8 +66,8 @@ export default function EventForm() {
       if (!Number.isFinite(min) || !Number.isFinite(max)) {
         return toast.error("Enter valid team size values");
       }
-      if (min < 2 || max < 2) {
-        return toast.error("Team size must be at least 2");
+      if (min < 1 || max < 1) {
+        return toast.error("Team size must be at least 1");
       }
       if (min > max) {
         return toast.error("Min team size cannot be greater than max team size");
@@ -83,7 +83,7 @@ export default function EventForm() {
     });
     // Send teamSize as JSON
     if (form.participationType === "group") {
-      fd.append("teamSize", JSON.stringify({ min: parseInt(form.teamSizeMin) || 2, max: parseInt(form.teamSizeMax) || 4 }));
+      fd.append("teamSize", JSON.stringify({ min: parseInt(form.teamSizeMin) || 1, max: parseInt(form.teamSizeMax) || 4 }));
     }
     if (imageFile) fd.append("image", imageFile);
 
@@ -185,11 +185,11 @@ export default function EventForm() {
               <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-[#41431B] mb-1.5">Min Team Size</label>
-                <input name="teamSizeMin" type="number" min="2" value={form.teamSizeMin} onChange={handleChange} className="input" />
+                <input name="teamSizeMin" type="number" min="1" value={form.teamSizeMin} onChange={handleChange} className="input" />
               </div>
               <div>
                 <label className="block text-sm text-[#41431B] mb-1.5">Max Team Size</label>
-                <input name="teamSizeMax" type="number" min="2" value={form.teamSizeMax} onChange={handleChange} className="input" />
+                <input name="teamSizeMax" type="number" min="1" value={form.teamSizeMax} onChange={handleChange} className="input" />
               </div>
             </div>
             </div>

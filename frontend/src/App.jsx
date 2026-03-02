@@ -18,6 +18,8 @@ import ManageEvents from "./pages/admin/ManageEvents";
 import EventForm from "./pages/admin/EventForm";
 import EventRegistrations from "./pages/admin/EventRegistrations";
 import AdminUsers from "./pages/admin/AdminUsers";
+import ManageRules from "./pages/admin/ManageRules";
+import Rulebook from "./pages/Rulebook";
 
 export default function App() {
   const { loading } = useAuth();
@@ -40,6 +42,7 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/rulebook" element={<Rulebook />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/events/:id" element={<EventDetail />} />
@@ -109,6 +112,14 @@ export default function App() {
           element={
             <AdminRoute>
               <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/rules"
+          element={
+            <AdminRoute>
+              <ManageRules />
             </AdminRoute>
           }
         />

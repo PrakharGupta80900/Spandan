@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import API from "../../api/axios";
-import { FiCalendar, FiUsers, FiList, FiCheckSquare, FiRefreshCw } from "react-icons/fi";
+import { FiCalendar, FiUsers, FiList, FiCheckSquare, FiRefreshCw, FiBookOpen } from "react-icons/fi";
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
@@ -72,6 +72,11 @@ export default function AdminDashboard() {
           <FiUsers className="text-[#41431B] mb-3" size={24} />
           <h3 className="font-bold text-[#41431B] text-lg">View Users</h3>
           <p className="text-[#41431B]/80 text-sm mt-1">Browse all registered participants</p>
+        </Link>
+        <Link to="/admin/rules" className="card p-6 hover:border-[#41431B]/40 transition group">
+          <FiBookOpen className="text-[#41431B] mb-3" size={24} />
+          <h3 className="font-bold text-[#41431B] text-lg">Manage Rulebook</h3>
+          <p className="text-[#41431B]/80 text-sm mt-1">Add, edit or delete rule sections for participants</p>
         </Link>
       </div>
     </div>

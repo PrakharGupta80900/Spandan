@@ -63,7 +63,7 @@ const eventSchema = new mongoose.Schema(
       default: "solo",
     },
     teamSize: {
-      min: { type: Number, default: 2 },
+      min: { type: Number, default: 1 },
       max: { type: Number, default: 4 },
     },
     createdBy: {

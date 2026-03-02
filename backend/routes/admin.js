@@ -211,8 +211,8 @@ router.post("/events", isAdmin, upload.single("image"), async (req, res) => {
       if (!Number.isFinite(min) || !Number.isFinite(max)) {
         return res.status(400).json({ error: "Invalid team size values" });
       }
-      if (min < 2 || max < 2) {
-        return res.status(400).json({ error: "Team size must be at least 2" });
+      if (min < 1 || max < 1) {
+        return res.status(400).json({ error: "Team size must be at least 1" });
       }
       if (min > max) {
         return res.status(400).json({ error: "Min team size cannot be greater than max team size" });
@@ -262,8 +262,8 @@ router.put("/events/:id", isAdmin, upload.single("image"), async (req, res) => {
       if (!Number.isFinite(min) || !Number.isFinite(max)) {
         return res.status(400).json({ error: "Invalid team size values" });
       }
-      if (min < 2 || max < 2) {
-        return res.status(400).json({ error: "Team size must be at least 2" });
+      if (min < 1 || max < 1) {
+        return res.status(400).json({ error: "Team size must be at least 1" });
       }
       if (min > max) {
         return res.status(400).json({ error: "Min team size cannot be greater than max team size" });
