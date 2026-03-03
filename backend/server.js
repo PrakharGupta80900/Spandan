@@ -68,6 +68,7 @@ app.use("/api/events", require("./routes/events"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/registrations", require("./routes/registrations"));
 app.use("/api/rules", require("./routes/rules"));
+app.use("/api/notifications", require("./routes/notifications"));
 
 // Health Check
 app.get("/api/health", (req, res) => {

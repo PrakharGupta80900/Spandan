@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import AnnouncementBanner from "./components/AnnouncementBanner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
@@ -19,6 +20,7 @@ import EventForm from "./pages/admin/EventForm";
 import EventRegistrations from "./pages/admin/EventRegistrations";
 import AdminUsers from "./pages/admin/AdminUsers";
 import ManageRules from "./pages/admin/ManageRules";
+import ManageNotifications from "./pages/admin/ManageNotifications";
 import Rulebook from "./pages/Rulebook";
 
 export default function App() {
@@ -38,6 +40,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#AEB784]">
       <Navbar />
+      <AnnouncementBanner />
       <Routes>
         {/* Public */}
         <Route path="/" element={<Home />} />
@@ -120,6 +123,14 @@ export default function App() {
           element={
             <AdminRoute>
               <ManageRules />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <AdminRoute>
+              <ManageNotifications />
             </AdminRoute>
           }
         />
