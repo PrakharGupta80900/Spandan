@@ -94,12 +94,23 @@ router.post("/:eventId", isAuthenticated, async (req, res) => {
       return res.status(400).json({ error: `Not enough spots available. Event has ${remaining} slots remaining.` });
     }
 
-    // Check if already registered
+    // Check if already registered as leader
     const existing = await Registration.findOne({
       user: req.user._id,
       event: req.params.eventId,
+      status: { $ne: "cancelled" },
     });
     if (existing) return res.status(400).json({ error: "Already registered for this event" });
+
+    // Check if already registered as a team member in someone else's registration
+    const existingAsMember = await Registration.findOne({
+      event: req.params.eventId,
+      "teamMembers.pid": req.user.pid,
+      status: { $ne: "cancelled" },
+    });
+    if (existingAsMember) {
+      return res.status(400).json({ error: "You are already part of a team registered for this event" });
+    }
 
     const regData = {
       user: req.user._id,
@@ -147,6 +158,24 @@ router.post("/:eventId", isAuthenticated, async (req, res) => {
       const mismatched = foundUsers.filter((u) => (u.college || "") !== leaderCollege);
       if (mismatched.length > 0) {
         return res.status(400).json({ error: `All team members must be from the same college as the leader (${leaderCollege || "unspecified"}). Mismatched PID(s): ${mismatched.map((u) => u.pid).join(", ")}` });
+      }
+
+      // Check if any team member is already registered for this event (as leader or as member)
+      const alreadyRegistered = await Registration.find({
+        event: req.params.eventId,
+        status: { $ne: "cancelled" },
+        $or: [
+          { pid: { $in: uniquePIDs } },
+          { "teamMembers.pid": { $in: uniquePIDs } },
+        ],
+      });
+      if (alreadyRegistered.length > 0) {
+        const conflictPIDs = new Set();
+        for (const reg of alreadyRegistered) {
+          if (uniquePIDs.includes(reg.pid)) conflictPIDs.add(reg.pid);
+          reg.teamMembers.forEach((m) => { if (uniquePIDs.includes(m.pid)) conflictPIDs.add(m.pid); });
+        }
+        return res.status(400).json({ error: `The following team member(s) are already registered for this event: ${[...conflictPIDs].join(", ")}` });
       }
 
       regData.teamName = teamName.trim();
