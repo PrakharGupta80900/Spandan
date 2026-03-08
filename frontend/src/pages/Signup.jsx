@@ -7,11 +7,10 @@ import toast from "react-hot-toast";
 const COLLEGES = [
   "SRMS CET&R",
   "SRMS NURSING",
-  "CET",
+  "SRMS CET",
   "SRMS IMS",
   "SRMS IPS",
   "SRMS IBS",
-  "SRMS UNNAO",
   "Others",
 ];
 
@@ -44,7 +43,7 @@ export default function Signup() {
   };
 
   // Validation helpers
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@gmail\.com$/;
   const emailValid = !form.email || emailRegex.test(form.email);
   const pwdHasLength = form.password.length >= 8;
   const pwdHasUpper = /[A-Z]/.test(form.password);
@@ -99,9 +98,9 @@ export default function Signup() {
               <label className="block text-sm text-gray-400 mb-1.5">Email Address *</label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" className={`input pl-10 ${form.email && !emailValid ? 'ring-2 ring-red-500' : ''}`} required />
+                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@gmail.com" className={`input pl-10 ${form.email && !emailValid ? 'ring-2 ring-red-500' : ''}`} required />
                 {form.email && !emailValid && (
-                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><FiAlertCircle size={12} /> Enter a valid email address</p>
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><FiAlertCircle size={12} /> Email must end with @gmail.com</p>
                 )}
               </div>
             </div>
