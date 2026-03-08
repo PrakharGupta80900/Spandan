@@ -42,7 +42,10 @@ export default function Developer() {
               height={128}
               loading="eager"
               decoding="async"
-              className="w-32 h-32 mx-auto rounded-full object-cover object-[50%_25%] border-2 border-[#41431B]"
+              draggable="false"
+              onDragStart={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
+              className="w-32 h-32 mx-auto rounded-full object-cover object-[50%_25%] border-2 border-[#41431B] select-none pointer-events-none"
             />
           ) : (
             <div className="w-20 h-20 mx-auto rounded-full bg-[#AEB784] flex items-center justify-center !text-black text-2xl font-bold">
