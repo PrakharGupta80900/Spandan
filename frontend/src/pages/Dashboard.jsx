@@ -205,6 +205,22 @@ export default function Dashboard() {
 
       drawFooter(pageNo);
 
+      const drawVerifiedSection = () => {
+        const lineStartX = pageWidth - margin - 140;
+        const lineEndX = pageWidth - margin;
+        const lineCenterX = (lineStartX + lineEndX) / 2;
+        const lineY = pageHeight - 56;
+        const labelY = pageHeight - 44;
+        doc.setDrawColor(...colors.olive);
+        doc.line(lineStartX, lineY, lineEndX, lineY);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...colors.oliveDark);
+        doc.text("Verify at Registration desk", lineCenterX, labelY, { align: "center" });
+      };
+
+      drawVerifiedSection();
+
       const today = new Date().toISOString().slice(0, 10);
       doc.save(`spandan-registrations-${user?.pid || "user"}-${today}.pdf`);
 
