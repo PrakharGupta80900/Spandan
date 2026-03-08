@@ -56,7 +56,16 @@ export default function AdminUsers() {
     const headers = ["PID", "Name", "Email", "Roll Number", "College", "Event Registrations"];
     const rows = filtered.map((u) => {
       const events = (u.registrations || [])
-        .map((r) => `${r?.event?.title || "Unknown Event"} (${r?.status || "confirmed"})`)
+        .map((r) => {
+          const title = r?.event?.title || "Unknown Event";
+          const isGroup = r?.tid || (Array.isArray(r?.teamMembers) && r.teamMembers.length > 0);
+          if (isGroup) {
+            const allPids = [r.pid, ...(r.teamMembers || []).map((m) => m.pid)].filter(Boolean).join(", ");
+            const tid = r.tid ? ` TID:${r.tid}` : "";
+            return `${title}${tid} [${allPids}]`;
+          }
+          return title;
+        })
         .join(" | ");
       return [u.pid, u.name, u.email, u.rollNumber, u.college, events];
     });
@@ -188,11 +197,18 @@ export default function AdminUsers() {
           const status = reg?.status || "confirmed";
           const detailLines = [];
           if (reg?.tid) detailLines.push(`TID: ${reg.tid}`);
-          if (Array.isArray(reg?.teamMembers) && reg.teamMembers.length > 0) {
-            const membersText = reg.teamMembers
-              .map((m) => `${m?.name || "Member"} (${m?.pid || "-"})`)
-              .join(", ");
-            detailLines.push(`Members: ${membersText}`);
+          const isTeam = reg?.tid || (Array.isArray(reg?.teamMembers) && reg.teamMembers.length > 0);
+          if (isTeam) {
+            // Build full member list: leader first, then team members
+            const leaderUser = users.find((usr) => usr.pid === reg.pid);
+            const leaderLabel = leaderUser
+              ? `${leaderUser.name} (${reg.pid})`
+              : reg.pid || "-";
+            const memberLabels = (reg.teamMembers || []).map(
+              (m) => `${m?.name || "Member"} (${m?.pid || "-"})`
+            );
+            const allMembers = [leaderLabel, ...memberLabels].join(", ");
+            detailLines.push(`Members: ${allMembers}`);
           }
 
           const wrappedName = doc.splitTextToSize(eventName, contentWidth - 140);

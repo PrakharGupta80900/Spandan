@@ -96,18 +96,28 @@ router.get("/users", isAdmin, async (req, res) => {
       .select("-password -__v")
       .sort({ createdAt: -1 });
     const userIds = users.map((u) => u._id);
+    const userPids = users.map((u) => u.pid).filter(Boolean);
+
+    // Fetch registrations where user is leader OR a team member
     const registrations = await Registration.find({
-      user: { $in: userIds },
+      $or: [
+        { user: { $in: userIds } },
+        { "teamMembers.pid": { $in: userPids } },
+      ],
       status: { $ne: "cancelled" },
     })
       .populate("event", "title date time venue")
       .select("user event status teamName teamMembers pid tid createdAt")
       .sort({ createdAt: -1 });
 
-    const registrationsByUser = registrations.reduce((acc, reg) => {
-      const key = String(reg.user);
-      if (!acc[key]) acc[key] = [];
-      acc[key].push({
+    // Build a pid -> userId map for fast lookup
+    const pidToUserId = {};
+    users.forEach((u) => { if (u.pid) pidToUserId[u.pid] = String(u._id); });
+
+    const registrationsByUser = {};
+
+    for (const reg of registrations) {
+      const regObj = {
         _id: reg._id,
         status: reg.status,
         pid: reg.pid || "",
@@ -124,9 +134,28 @@ router.get("/users", isAdmin, async (req, res) => {
               venue: reg.event.venue,
             }
           : null,
-      });
-      return acc;
-    }, {});
+        role: "leader",
+      };
+
+      // Add for leader
+      const leaderKey = String(reg.user);
+      if (!registrationsByUser[leaderKey]) registrationsByUser[leaderKey] = [];
+      // Avoid duplicates
+      if (!registrationsByUser[leaderKey].some((r) => String(r._id) === String(reg._id))) {
+        registrationsByUser[leaderKey].push({ ...regObj, role: "leader" });
+      }
+
+      // Add for each team member who is a known user
+      for (const member of (reg.teamMembers || [])) {
+        const memberUserId = pidToUserId[member.pid];
+        if (memberUserId && memberUserId !== leaderKey) {
+          if (!registrationsByUser[memberUserId]) registrationsByUser[memberUserId] = [];
+          if (!registrationsByUser[memberUserId].some((r) => String(r._id) === String(reg._id))) {
+            registrationsByUser[memberUserId].push({ ...regObj, role: "member" });
+          }
+        }
+      }
+    }
 
     const enrichedUsers = users.map((u) => {
       const user = u.toObject();

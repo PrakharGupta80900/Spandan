@@ -160,11 +160,15 @@ export default function Dashboard() {
           const status = "Confirmed";
           const detailLines = [];
           if (reg?.tid) detailLines.push(`TID: ${reg.tid}`);
-          if (Array.isArray(reg?.teamMembers) && reg.teamMembers.length > 0) {
-            const membersText = reg.teamMembers
-              .map((m) => `${m?.name || "Member"} (${m?.pid || "-"})`)
-              .join(", ");
-            detailLines.push(`Members: ${membersText}`);
+          const isTeam = reg?.tid || (Array.isArray(reg?.teamMembers) && reg.teamMembers.length > 0);
+          if (isTeam) {
+            // Leader first, then team members
+            const leaderLabel = `${user?.name || "Leader"} (${reg.pid || user?.pid || "-"})`;
+            const memberLabels = (reg.teamMembers || []).map(
+              (m) => `${m?.name || "Member"} (${m?.pid || "-"})`
+            );
+            const allMembers = [leaderLabel, ...memberLabels].join(", ");
+            detailLines.push(`Members: ${allMembers}`);
           }
 
           const wrappedName = doc.splitTextToSize(eventName, contentWidth - 140);
