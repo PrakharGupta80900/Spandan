@@ -61,16 +61,18 @@ export default function EventRegistrations() {
 
   const exportCSV = () => {
     const headers = isgroup
-      ? ["TID", "Team Name", "PID", "Name", "College"]
+      ? ["TID", "Team Name", "Leader PID", "Leader Name", "College", "Member PIDs"]
       : ["PID", "Name", "College"];
     const rows = registrations.map((r) => {
       if (isgroup) {
+        const memberPids = (r.teamMembers || []).map((m) => m.pid).join(", ");
         return [
           r.tid || "",
           r.teamName || "",
           r.pid,
           r.user?.name,
           r.user?.college,
+          memberPids,
         ];
       }
       return [
