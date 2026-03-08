@@ -4,7 +4,7 @@ import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import {
-  FiCalendar, FiMapPin, FiUsers, FiArrowLeft, FiCheckCircle, FiPlus, FiX, FiUserPlus,
+  FiCalendar, FiMapPin, FiUsers, FiArrowLeft, FiCheckCircle, FiPlus, FiX, FiUserPlus, FiBookOpen,
 } from "react-icons/fi";
 
 const CATEGORY_COLORS = {
@@ -31,6 +31,7 @@ export default function EventDetail() {
   const [pidInput, setPidInput] = useState("");
   const [teamMembers, setTeamMembers] = useState([]);
   const [checkingPid, setCheckingPid] = useState(false);
+  const [eventRules, setEventRules] = useState([]);
 
   const normalizePid = (value) => {
     const cleaned = String(value || "").toUpperCase().replace(/\s+/g, "");
@@ -49,6 +50,11 @@ export default function EventDetail() {
       try {
         const { data } = await API.get(`/events/${id}`);
         setEvent(data);
+        const rulesRes = await API.get("/rules");
+        const matched = rulesRes.data.filter(
+          (s) => s.title.trim().toLowerCase() === data.title.trim().toLowerCase()
+        );
+        setEventRules(matched);
         if (user) {
           // Check registration
           const regs = await API.get("/registrations/my/all");
@@ -191,6 +197,34 @@ export default function EventDetail() {
             <h2 className="text-lg font-semibold text-[#41431B] mb-2">About this Event</h2>
             <p className="text-[#41431B]/90 leading-relaxed whitespace-pre-line">{event.description}</p>
           </div>
+
+          {eventRules.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold text-[#41431B] mb-3 flex items-center gap-2">
+                <FiBookOpen size={17} /> Event Rules
+              </h2>
+              <div className="flex flex-col gap-4">
+                {eventRules.map((section) => (
+                  <div key={section._id} className="bg-[#F8F3E1] border border-[#41431B]/20 rounded-xl p-4">
+                    {section.rules.length === 0 ? (
+                      <p className="text-[#41431B]/50 text-sm italic">No rules specified.</p>
+                    ) : (
+                      <ol className="list-none space-y-2.5">
+                        {section.rules.map((rule, i) => (
+                          <li key={i} className="flex items-start gap-3 text-[#41431B]/90 text-sm">
+                            <span className="min-w-[1.5rem] h-6 w-6 flex items-center justify-center rounded-full bg-[#E3DBBB] text-[#41431B] text-xs font-bold shrink-0">
+                              {i + 1}
+                            </span>
+                            <span className="leading-relaxed pt-0.5">{rule}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Registration Sidebar */}
@@ -300,6 +334,11 @@ export default function EventDetail() {
             {user && registered && (
               <p className="text-center text-xs text-[#41431B]/80 mt-2">
                 Check your <Link to="/dashboard" className="text-[#41431B] hover:underline">dashboard</Link> for details
+              </p>
+            )}
+            {eventRules.length > 0 && (
+              <p className="text-center text-xs text-[#41431B]/60 mt-3">
+                ↓ Scroll down to view event rules
               </p>
             )}
           </div>
