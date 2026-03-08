@@ -91,8 +91,14 @@ async function sendRegistrationsPdfEmail({ name, email, pid, rollNumber, college
           const title = reg?.event?.title || "Unknown Event";
           const status = reg?.status || "Confirmed";
           const team = reg?.teamName ? `<br/><span style="font-size:11px;color:#666;">Team: ${reg.teamName}</span>` : "";
-          const members = Array.isArray(reg?.teamMembers) && reg.teamMembers.length > 0
-            ? `<br/><span style="font-size:11px;color:#666;">Members: ${reg.teamMembers.map(m => `${m?.name || "Member"} (${m?.pid || "-"})`).join(", ")}</span>`
+          const isTeam = reg?.tid || (Array.isArray(reg?.teamMembers) && reg.teamMembers.length > 0);
+          const leaderName = reg?.user?.name || name;
+          const leaderPid = reg?.pid || pid;
+          const memberLabels = isTeam
+            ? [`${leaderName} (${leaderPid})`, ...(reg.teamMembers || []).map(m => `${m?.name || "Member"} (${m?.pid || "-"})`)]
+            : [];
+          const members = memberLabels.length > 0
+            ? `<br/><span style="font-size:11px;color:#666;">Members: ${memberLabels.join(", ")}</span>`
             : "";
           const tid = reg?.tid ? `<br/><span style="font-size:11px;color:#41431B;">TID: ${reg.tid}</span>` : "";
           const bg = i % 2 === 0 ? "#F8F3E1" : "#ffffff";

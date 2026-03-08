@@ -54,6 +54,7 @@ router.post("/email-summary", isAuthenticated, async (req, res) => {
       status: { $ne: "cancelled" },
     })
       .populate("event", "title date venue")
+      .populate("user", "name pid")
       .sort({ createdAt: -1 });
 
     const emailResult = await sendRegistrationsPdfEmail({
