@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import API from "../api/axios";
-import { FiBookOpen, FiTag } from "react-icons/fi";
+import rulebookPdf from "../SPANDAN RULEBOOK.pdf";
+import { FiBookOpen, FiTag, FiDownload } from "react-icons/fi";
 
 export default function Rulebook() {
   const [sections, setSections] = useState([]);
@@ -30,14 +31,22 @@ export default function Rulebook() {
     <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Header */}
       <div className="mb-8">
-        <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h2 className="text-3xl font-black text-[#41431B] flex items-center gap-2">
             <FiBookOpen size={28} /> Rulebook
           </h2>
-          <p className="text-[#41431B]/70 mt-1 text-sm">
-            Official rules and guidelines for Spandan 2026
-          </p>
+          <a
+            href={rulebookPdf}
+            download="SPANDAN-RULEBOOK.pdf"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#41431B]/20 bg-[#E3DBBB] text-[#41431B] text-sm font-semibold hover:bg-[#D9CFAB] transition-colors"
+          >
+            <FiDownload size={14} />
+            Download PDF
+          </a>
         </div>
+        <p className="text-[#41431B]/70 mt-2 text-sm">
+          Official rules and guidelines for Spandan 2026
+        </p>
       </div>
 
       {/* Filter Tabs */}
